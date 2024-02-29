@@ -1,0 +1,52 @@
+{
+  "name": "futen",
+  "version": "0.0.0-prerelease.1",
+  "main": "dist/cjs/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DotEnv-it/futen.git"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@typescript-eslint/eslint-plugin": "^7.1.0",
+    "@typescript-eslint/parser": "^7.1.0",
+    "eslint": "^8.57.0",
+    "eslint-config-standard": "^17.1.0",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-n": "^15.7.0",
+    "eslint-plugin-prettier": "latest",
+    "eslint-plugin-promise": "^6.1.1",
+    "prettier": "^3.2.5",
+    "tsup": "^8.0.2"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "description": "A (very) lightweight web framework, using decorators, simplifying syntax",
+  "keywords": [
+    "bun",
+    "web",
+    "http",
+    "server",
+    "socket",
+    "framework"
+  ],
+  "peerDependenciesMeta": {
+    "typescript": {
+      "optional": true
+    }
+  },
+  "scripts": {
+    "bake": "bun bake.ts",
+    "prettier": "bunx prettier --write ./src/**/*.ts ./tests/**/*.test.ts",
+    "lint": "bun prettier && eslint ./src ./tests --ext .ts",
+    "lint:fix": "bun prettier && eslint ./src ./tests --ext .ts --fix",
+    "release:local": "bun lint:fix && bun bake && bun test && npm publish --dry-run",
+    "release:patch": "npm version patch && npm run release:local",
+    "release:minor": "npm version minor && npm run release:local",
+    "release:major": "npm version major && npm run release:local"
+  }
+}
