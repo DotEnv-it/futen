@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'bun:test'
-import { WebSocketServer, ws } from '../src/router/websocket'
+import { WebSocketServer, ws } from '../dist/router/websocket.mjs'
 import { ServerWebSocket } from 'bun'
 
 describe('WebSocket', () => {

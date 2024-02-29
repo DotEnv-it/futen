@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'bun:test'
-import { Server, route } from '../src/router/rest'
+import { Server, route } from '../dist/router/rest.mjs'
 
 describe('REST', () => {
   @route('/')
