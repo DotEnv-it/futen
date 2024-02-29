@@ -5,7 +5,7 @@ import { cleanPath } from './util'
 /**
  * Cointains possible HTTP methods
  */
-export enum HTTPMethods {
+enum HTTPMethods {
   GET = 'GET',
   POST = 'POST',
   PUT = 'PUT',
@@ -16,7 +16,7 @@ export enum HTTPMethods {
 }
 type HTTPMethodString = keyof typeof HTTPMethods
 
-export type RouteHandler = (
+type RouteHandler = (
   request: Request,
   params: Record<string, string>
 ) => Response | Promise<Response>

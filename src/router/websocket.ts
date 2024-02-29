@@ -11,7 +11,7 @@ enum WebSocketEvents {
 }
 type WebSocketEventString = keyof typeof WebSocketEvents
 
-export type WebSocketHandler = (socket: ServerWebSocket, ...args: any[]) => void
+type WebSocketHandler = (socket: ServerWebSocket, ...args: any[]) => void
 type WebSocketMethods = { [event in WebSocketEventString]: WebSocketHandler }
 
 interface WebSocketGenerator extends WebSocketMethods {}
