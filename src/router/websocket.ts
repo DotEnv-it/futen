@@ -133,6 +133,11 @@ export class WebSocketServer<
   constructor(websockets: TWSRoutes, options?: Middleware) {
     this.websockets = websockets as Record<keyof TWSRoutes, WebSocket>
     for (const socket of Object.values(this.websockets)) {
+      if (!(socket instanceof WebSocket)) {
+        throw new Error(
+          `Did you forget to apply the decorator?\nInvalid WebSocket class: \n${socket}`
+        )
+      }
       if (!socket.port) socket.port = 0
       if (!this.wsMap[socket.port]) this.wsMap[socket.port] = {}
       const path = cleanPath(socket.path)
