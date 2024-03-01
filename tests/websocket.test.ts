@@ -18,7 +18,7 @@ describe('WebSocket', () => {
     }
   }
 
-  @ws('/websocket2/:id/:id2', 3003)
+  @ws('/websocket2/:id/:id2')
   class WebSocket2 {
     message(
       ws: ServerWebSocket,
@@ -61,7 +61,13 @@ describe('WebSocket', () => {
     WebSocket2
   })
 
-  const port = wsServer.instances[0].port
+  const randomPort = wsServer.instances[0].port
+  const fixedPort = wsServer.instances[1].port
+
+  test('should verify the ports of the instances', () => {
+    expect(randomPort).toBeGreaterThan(0)
+    expect(fixedPort).toBe(443)
+  })
 
   test('should verify the paths of the instances', () => {
     expect(wsServer.websockets.WebSocket1.path).toBe('/websocket1')
@@ -69,7 +75,7 @@ describe('WebSocket', () => {
   })
 
   test('should verify the message event of the instances', async () => {
-    const ws = new WebSocket(`ws://localhost:${port}/websocket1`)
+    const ws = new WebSocket(`ws://localhost:${randomPort}/websocket1`)
     let expectsFired = 0
     ws.onmessage = (event) => {
       expect(event.data).toBe('Hello, world! from FirstWebSocket')
@@ -82,7 +88,7 @@ describe('WebSocket', () => {
   })
 
   test('should verify the message event with params of the instances', async () => {
-    const ws = new WebSocket('ws://localhost:3003/websocket2/1/2')
+    const ws = new WebSocket(`ws://localhost:${fixedPort}/websocket2/1/2`)
     let expectsFired = 0
     ws.onmessage = (event) => {
       expect(event.data).toBe(
@@ -97,7 +103,7 @@ describe('WebSocket', () => {
   })
 
   test('should verify the close event of the instances', async () => {
-    const ws = new WebSocket('ws://localhost:3003/websocket2/1/2')
+    const ws = new WebSocket(`ws://localhost:${fixedPort}/websocket2/1/2`)
     let expectsFired = 0
     ws.onclose = (event) => {
       expect(event.code).toBe(1000)
