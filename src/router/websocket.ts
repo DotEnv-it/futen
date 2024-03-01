@@ -138,7 +138,7 @@ export class WebSocketServer<
           `Did you forget to apply the decorator?\nInvalid WebSocket class: \n${socket}`
         )
       }
-      if (!socket.port) socket.port = 0
+      if (!socket.port) socket.port = 443
       if (!this.wsMap[socket.port]) this.wsMap[socket.port] = {}
       const path = cleanPath(socket.path)
       if (this.wsMap[socket.port][path]) {
