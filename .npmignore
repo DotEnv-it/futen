@@ -1,4 +1,5 @@
 .git
+.husky
 src
 examples
 tests
@@ -6,21 +7,11 @@ bake.ts
 
 CONTRIBUTING.md
 
-.editorconfig
-.eslintrc.json
+tsconfig.json
 .eslintrc.cjs
 .prettierrc
 .vscode
 .gitignore
-.travis.yml
-rollup.config.dev.js
-rollup.config.js
-yarn-error.log
 .DS_Store
-
 node_modules
 bun.lockb
-
-tsconfig.json
-tsconfig-cjs.json
-tsconfig-es.json

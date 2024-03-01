@@ -1,0 +1,12 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+### Mandatory to make commits, otherwise PR will be rejected
+# Lint and fix syntax
+bun lint:fix
+
+# Run build
+bun bake
+
+# Tests need to run on the built package to be considered valid
+bun test
