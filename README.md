@@ -1,6 +1,6 @@
 # **:triangular_flag_on_post: Futen**
 
-![project version](https://img.shields.io/badge/futen-0.0.0_prerelease.7-brightgreen.svg)
+![project version](https://img.shields.io/badge/futen-0.0.0_prerelease.8-brightgreen.svg)
 
 > A (very) lightweight web framework, using decorators, simplifying syntax.
 
