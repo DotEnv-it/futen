@@ -32,6 +32,7 @@
     "http",
     "server",
     "socket",
+    "backend",
     "framework"
   ],
   "peerDependenciesMeta": {

@@ -13,27 +13,19 @@
 
 ---
 
-
-## **:wrench: Developer usage**
-
 ### **Installation**
 
 ```bash
-bun install
+bun i futen
 ```
-
 ---
 
-### Build the project
+## **:wrench: Developer usage**
+
+### Build the project, run tests and lint
 
 ```bash
-bun bake
-```
-
-### Test the project
-
-```bash
-bun test
+bun release:local
 ```
 
 ---
@@ -41,23 +33,21 @@ bun test
 ## **:handshake: Contributing**
 
 - Fork it!
-- Create your feature branch: `git checkout -b feature/my-new-feature`
-- Commit your changes: `git commit -am 'Add some feature'`
-- Push to the branch: `git push origin feature/my-new-feature`
+- Read the [contributing guidelines](CONTRIBUTING.md)
 - Submit a pull request
 
 ---
 
 ### **:heart: Show your support**
 
-Please :star: this repository if you like it or this project helped you!Feel free to open issues or submit pull-requests to help me improving my work.
+Please :star: this repository if you like it or this project helped you! Feel free to open issues or submit pull-requests to help me improving my work.
 
 ---
 
 ### **:scroll: Release history**
 
-* 0.0.0-prerelease.5
-    * First release
+* 0.0.0-prerelease.x
+  * Bug fixing before full release
 
 ---
 
