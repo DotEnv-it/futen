@@ -22,10 +22,10 @@ bun i futen
 
 ## **:wrench: Developer usage**
 
-### Build the project, run tests and lint
+### Lint, build, run tests
 
 ```bash
-bun release:local
+bun release:dry
 ```
 
 ---
