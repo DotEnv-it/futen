@@ -55,8 +55,8 @@ class WebSocket<TClass = Function> extends WebSocketGenerator {
     if (requestParts.length !== this.pathParts.length) return false
     for (let i = 0; i < this.pathParts.length; i++) {
       const part = this.pathParts[i]
-      if (!(part[0] === ':' || part === requestParts[i])) return false
-      if (part[0] === ':') this.parameters[part.slice(1)] = requestParts[i]
+      if (!(part.charAt(0) === ':' || part === requestParts[i])) return false
+      if (part.charAt(0) === ':') this.parameters[part.slice(1)] = requestParts[i]
     }
     return true
   }
