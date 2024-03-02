@@ -52,7 +52,10 @@ class Route<TClass = Function> extends RouteGenerator {
     super()
     this.path = cleanPath(path)
     this.pathParts = this.path.split('/')
-    if (this.path !== '/' && new Set(this.pathParts).size !== this.pathParts.length) {
+    if (
+      this.path !== '/' &&
+      new Set(this.pathParts).size !== this.pathParts.length
+    ) {
       for (const part in this.pathParts) {
         if (part.startsWith(':')) continue
         throw new Error(`Duplicate path parameter names in ${this.path}`)
