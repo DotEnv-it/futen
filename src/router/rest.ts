@@ -75,8 +75,6 @@ class Route<TClass = Function> extends RouteGenerator {
     for (let i = 0; i < this.pathParts.length; i++) {
       const part = this.pathParts[i]
       if (!(part.startsWith(':') || part === requestParts[i])) return false
-    }
-    for (const [i, part] of this.pathParts.entries()) {
       if (part.startsWith(':')) this.parameters[part.slice(1)] = requestParts[i]
     }
     return true
