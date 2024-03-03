@@ -23,8 +23,8 @@ type RouteHandler = (
 ) => Response | Promise<Response>
 type RouteMethods = { [method in HTTPMethodString]: RouteHandler }
 
-interface RouteGenerator extends RouteMethods { }
-abstract class RouteGenerator { }
+interface RouteGenerator extends RouteMethods {}
+abstract class RouteGenerator {}
 for (const method in HTTPMethods) {
   RouteGenerator.prototype[method as HTTPMethodString] = function () {
     return Response.json(
