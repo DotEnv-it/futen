@@ -23,8 +23,8 @@ type RouteHandler = (
 ) => Response | Promise<Response>
 type RouteMethods = { [method in HTTPMethodString]: RouteHandler }
 
-interface RouteGenerator extends RouteMethods {}
-abstract class RouteGenerator {}
+interface RouteGenerator extends RouteMethods { }
+abstract class RouteGenerator { }
 for (const method in HTTPMethods) {
   RouteGenerator.prototype[method as HTTPMethodString] = function () {
     return Response.json(
@@ -52,13 +52,13 @@ class Route<TClass = Function> extends RouteGenerator {
     super()
     this.path = cleanPath(path)
     this.pathParts = this.path.split('/')
-    if (
-      this.path !== '/' &&
-      new Set(this.pathParts).size !== this.pathParts.length
-    ) {
-      for (const part in this.pathParts) {
-        if (part.startsWith(':')) continue
-        throw new Error(`Duplicate path parameter names in ${this.path}`)
+    for (const part of this.pathParts) {
+      if (part.startsWith(':')) {
+        const pathSlice = part.slice(1)
+        if (this.parameters[pathSlice] !== undefined) {
+          throw new Error(`Duplicate path parameter names in ${this.path}`)
+        }
+        this.parameters[pathSlice] = ''
       }
     }
     if (handlers.length > 0) {
@@ -69,7 +69,7 @@ class Route<TClass = Function> extends RouteGenerator {
     return this
   }
 
-  public parseParams(path: string) {
+  public parsePath(path: string) {
     const requestParts = cleanPath(path).split('/')
     if (requestParts.length !== this.pathParts.length) return false
     for (let i = 0; i < this.pathParts.length; i++) {
@@ -206,7 +206,7 @@ export class Server<TRoutes extends Record<string, unknown>> {
       async fetch(request) {
         const url = new URL(request.url)
         const route = Object.values(routeMap).find((route) => {
-          if (route.parseParams(url.pathname)) return true
+          if (route.parsePath(url.pathname)) return true
           return false
         })
         if (!route) {

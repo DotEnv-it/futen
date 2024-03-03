@@ -33,13 +33,13 @@ class WebSocket<TClass = Function> extends WebSocketGenerator {
     super()
     this.path = cleanPath(path)
     this.pathParts = this.path.split('/')
-    if (
-      this.path !== '/' &&
-      new Set(this.pathParts).size !== this.pathParts.length
-    ) {
-      for (const part in this.pathParts) {
-        if (part.startsWith(':')) continue
-        throw new Error(`Duplicate path parameter names in ${this.path}`)
+    for (const part of this.pathParts) {
+      if (part.startsWith(':')) {
+        const pathSlice = part.slice(1)
+        if (this.parameters[pathSlice] !== undefined) {
+          throw new Error(`Duplicate path parameter names in ${this.path}`)
+        }
+        this.parameters[pathSlice] = ''
       }
     }
     if (handlers.length > 0) {
@@ -50,7 +50,7 @@ class WebSocket<TClass = Function> extends WebSocketGenerator {
     return this
   }
 
-  public parseParams(path: string) {
+  public parsePath(path: string) {
     const requestParts = cleanPath(path).split('/')
     if (requestParts.length !== this.pathParts.length) return false
     for (let i = 0; i < this.pathParts.length; i++) {
@@ -151,14 +151,14 @@ export class WebSocketServer<
       const instance = Bun.serve({
         async fetch(request, server) {
           const url = new URL(request.url)
-          let route: WebSocket | undefined
-          for (const r of routeArray) {
-            if (r.parseParams(url.pathname)) {
-              route = r
+          let wsRoute: WebSocket | undefined
+          for (const route of routeArray) {
+            if (route.parsePath(url.pathname)) {
+              wsRoute = route
               break
             }
           }
-          if (typeof route === 'undefined') {
+          if (typeof wsRoute === 'undefined') {
             return new Response(`Route not found for ${request.url}`, {
               status: 404
             })
@@ -174,7 +174,7 @@ export class WebSocketServer<
           }
           if (
             !server.upgrade(request, {
-              data: { route: route.path, params: route.params }
+              data: { route: wsRoute.path, params: wsRoute.params }
             })
           ) {
             return new Response('Upgrade failed!', { status: 500 })
