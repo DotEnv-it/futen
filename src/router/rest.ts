@@ -15,6 +15,7 @@ enum HTTPMethods {
   OPTIONS = 'OPTIONS'
 }
 type HTTPMethodString = keyof typeof HTTPMethods
+const HTTPMethodKeys = Object.keys(HTTPMethods)
 
 type RouteHandler = (
   request: Request,
@@ -51,38 +52,33 @@ class Route<TClass = Function> extends RouteGenerator {
     super()
     this.path = cleanPath(path)
     this.pathParts = this.path.split('/')
-    if (
-      new Set(this.pathParts).size !== this.pathParts.length &&
-      this.pathParts.some((part) => part.startsWith(':'))
-    ) {
-      throw new Error(`Duplicate path parameter names in ${this.path}`)
+    for (const part of this.pathParts) {
+      if (part.startsWith(':')) {
+        const pathSlice = part.slice(1)
+        if (this.parameters[pathSlice] !== undefined) {
+          throw new Error(`Duplicate path parameter names in ${this.path}`)
+        }
+        this.parameters[pathSlice] = ''
+      }
     }
     if (handlers.length > 0) {
-      handlers.forEach((method) => {
+      for (const method of handlers) {
         this[method.name as HTTPMethodString] = method
-      })
+      }
     }
     return this
   }
 
-  public parseParams(path: string) {
+  public parsePath(path: string) {
     const requestParts = cleanPath(path).split('/')
-    if (
-      requestParts.length !== this.pathParts.length ||
-      !this.pathParts.every(
-        (part, i) => part.startsWith(':') || part === requestParts[i]
-      )
-    ) {
-      return false
+    if (requestParts.length !== this.pathParts.length) return false
+    for (let i = 0; i < this.pathParts.length; i++) {
+      const part = this.pathParts[i]
+      if (!(part.charAt(0) === ':' || part === requestParts[i])) return false
+      if (part.charAt(0) === ':') {
+        this.parameters[part.slice(1)] = requestParts[i]
+      }
     }
-    const params = this.pathParts.reduce(
-      (acc, part, i) => {
-        if (part.startsWith(':')) acc[part.slice(1)] = requestParts[i]
-        return acc
-      },
-      {} as Record<string, string>
-    )
-    this.parameters = params
     return true
   }
 
@@ -142,11 +138,13 @@ export function route(path: string) {
     if (typeof target !== 'function' || !target.prototype) {
       throw new Error('Route decorator can only be used on classes')
     }
-    const handlers = Object.getOwnPropertyNames(target.prototype)
-      .map((name) => target.prototype[name as keyof typeof target.prototype])
-      .filter(
-        (method) => typeof method === 'function' && method.name in HTTPMethods
-      ) as RouteHandler[]
+    const handlers: RouteHandler[] = []
+    for (let i = 0; i < HTTPMethodKeys.length; i++) {
+      const method = target.prototype[HTTPMethodKeys[i]] as RouteHandler
+      if (typeof method === 'function') {
+        handlers.push(method)
+      }
+    }
     return new Route(path, target, handlers) as Route<TClass> & TClass // https://github.com/Microsoft/TypeScript/issues/4881
   }
 }
@@ -182,25 +180,18 @@ export class Server<TRoutes extends Record<string, unknown>> {
     routes: TRoutes,
     public options?: ServerOptions
   ) {
-    const routeMap = Object.values(routes)
-      .map((route) => {
-        if (!(route instanceof Route)) {
-          throw new Error(
-            `Did you forget to apply the decorator?\nInvalid route class: \n${route}`
-          )
-        }
-        return route
-      })
-      .reduce(
-        (acc, route) => {
-          if (acc[route.path]) {
-            throw new Error(`Duplicate route path: ${route.path}`)
-          }
-          acc[route.path] = route
-          return acc
-        },
-        {} as Record<string, Route>
-      )
+    const routeMap: Record<string, Route> = {}
+    for (const route of Object.values(routes)) {
+      if (!(route instanceof Route)) {
+        throw new Error(
+          `Did you forget to apply the decorator?\nInvalid route class: \n${route}`
+        )
+      }
+      if (routeMap[route.path]) {
+        throw new Error(`Duplicate route path: ${route.path}`)
+      }
+      routeMap[route.path] = route
+    }
     this.routes = routes as Record<keyof TRoutes, Route>
     if (
       options?.fetch !== undefined &&
@@ -215,7 +206,7 @@ export class Server<TRoutes extends Record<string, unknown>> {
       async fetch(request) {
         const url = new URL(request.url)
         const route = Object.values(routeMap).find((route) => {
-          if (route.parseParams(url.pathname)) return true
+          if (route.parsePath(url.pathname)) return true
           return false
         })
         if (!route) {

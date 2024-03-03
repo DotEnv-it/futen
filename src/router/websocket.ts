@@ -10,6 +10,7 @@ enum WebSocketEvents {
   error = 'error'
 }
 type WebSocketEventString = keyof typeof WebSocketEvents
+const WebSocketEventKeys = Object.keys(WebSocketEvents)
 
 type WebSocketHandler = (socket: ServerWebSocket, ...args: any[]) => void
 type WebSocketMethods = { [event in WebSocketEventString]: WebSocketHandler }
@@ -32,38 +33,33 @@ class WebSocket<TClass = Function> extends WebSocketGenerator {
     super()
     this.path = cleanPath(path)
     this.pathParts = this.path.split('/')
-    if (
-      new Set(this.pathParts).size !== this.pathParts.length &&
-      this.pathParts.some((part) => part.startsWith(':'))
-    ) {
-      throw new Error(`Duplicate path parameter names in ${this.path}`)
+    for (const part of this.pathParts) {
+      if (part.startsWith(':')) {
+        const pathSlice = part.slice(1)
+        if (this.parameters[pathSlice] !== undefined) {
+          throw new Error(`Duplicate path parameter names in ${this.path}`)
+        }
+        this.parameters[pathSlice] = ''
+      }
     }
     if (handlers.length > 0) {
-      handlers.forEach((method) => {
+      for (const method of handlers) {
         this[method.name as WebSocketEventString] = method
-      })
+      }
     }
     return this
   }
 
-  public parseParams(path: string) {
+  public parsePath(path: string) {
     const requestParts = cleanPath(path).split('/')
-    if (
-      requestParts.length !== this.pathParts.length ||
-      !this.pathParts.every(
-        (part, i) => part.startsWith(':') || part === requestParts[i]
-      )
-    ) {
-      return false
+    if (requestParts.length !== this.pathParts.length) return false
+    for (let i = 0; i < this.pathParts.length; i++) {
+      const part = this.pathParts[i]
+      if (!(part.charAt(0) === ':' || part === requestParts[i])) return false
+      if (part.charAt(0) === ':') {
+        this.parameters[part.slice(1)] = requestParts[i]
+      }
     }
-    const params = this.pathParts.reduce(
-      (acc, part, i) => {
-        if (part.startsWith(':')) acc[part.slice(1)] = requestParts[i]
-        return acc
-      },
-      {} as Record<string, string>
-    )
-    this.parameters = params
     return true
   }
 
@@ -81,12 +77,13 @@ export function ws(path: string, port?: number) {
     if (typeof target !== 'function' || !target.prototype) {
       throw new Error('WebSocket decorator can only be used on classes')
     }
-    const handlers = Object.getOwnPropertyNames(target.prototype)
-      .map((name) => target.prototype[name as keyof typeof target.prototype])
-      .filter(
-        (method) =>
-          typeof method === 'function' && method.name in WebSocketEvents
-      ) as WebSocketHandler[]
+    const handlers: WebSocketHandler[] = []
+    for (let i = 0; i < WebSocketEventKeys.length; i++) {
+      const method = target.prototype[WebSocketEventKeys[i]] as WebSocketHandler
+      if (typeof method === 'function') {
+        handlers.push(method)
+      }
+    }
     return new WebSocket(path, target, handlers, port) as WebSocket<TClass> &
       TClass // https://github.com/Microsoft/TypeScript/issues/4881
   }
@@ -102,7 +99,7 @@ function webSocketHandlerRouter(routes: Record<string, WebSocket>) {
       ...args: any[]
     ) {
       const route = routes[socket.data.route]
-      if (!route) return
+      if (typeof route === 'undefined') return
       return route[event as WebSocketEventString](
         socket,
         ...args,
@@ -150,14 +147,18 @@ export class WebSocketServer<
     }
 
     for (const [port, routes] of Object.entries(this.wsMap)) {
+      const routeArray = Object.values(routes)
       const instance = Bun.serve({
         async fetch(request, server) {
           const url = new URL(request.url)
-          const route = Object.values(routes).find((route) => {
-            if (route.parseParams(url.pathname)) return true
-            return false
-          })
-          if (!route) {
+          let wsRoute: WebSocket | undefined
+          for (const route of routeArray) {
+            if (route.parsePath(url.pathname)) {
+              wsRoute = route
+              break
+            }
+          }
+          if (typeof wsRoute === 'undefined') {
             return new Response(`Route not found for ${request.url}`, {
               status: 404
             })
@@ -167,15 +168,13 @@ export class WebSocketServer<
             options?.middleware,
             options?.middlewarePaths
           )
-          if (middlewareResponse instanceof Response) {
-            return middlewareResponse
-          }
+          if (middlewareResponse instanceof Response) return middlewareResponse
           if (middlewareResponse instanceof Request) {
             request = middlewareResponse
           }
           if (
             !server.upgrade(request, {
-              data: { route: route.path, params: route.params }
+              data: { route: wsRoute.path, params: wsRoute.params }
             })
           ) {
             return new Response('Upgrade failed!', { status: 500 })
@@ -188,7 +187,7 @@ export class WebSocketServer<
       this.instances.push(instance)
       delete this.wsMap[Number(port)]
       const assignedPort = instance.port
-      for (const route of Object.values(routes)) route.port = assignedPort
+      for (const route of routeArray) route.port = assignedPort
       this.wsMap[assignedPort] = routes
     }
     return this

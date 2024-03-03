@@ -54,11 +54,11 @@ export function runMiddleware(
   middleware?: Middleware['middleware'],
   middlewarePaths: Middleware['middlewarePaths'] = ['*']
 ) {
-  if (!middleware || !middlewarePaths) return
-  if (middlewarePaths) {
-    if (typeof middlewarePaths === 'string') middlewarePaths = [middlewarePaths]
-    const path = cleanPath(new URL(request.url).pathname)
-    if (middlewarePaths.some((p) => wildcardMatchRegExp(path, p))) {
+  if (middleware === undefined) return
+  if (typeof middlewarePaths === 'string') middlewarePaths = [middlewarePaths]
+  const path = cleanPath(new URL(request.url).pathname)
+  for (let i = 0; i < middlewarePaths.length; i++) {
+    if (wildcardMatchRegExp(path, middlewarePaths[i])) {
       return middleware(request)
     }
   }
