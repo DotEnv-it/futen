@@ -1,6 +1,6 @@
 import { Server as BunServer, ServeOptions } from 'bun'
 import { Middleware, runMiddleware } from './middleware'
-import { cleanPath } from './util'
+import Router from './router'
 
 /**
  * Cointains possible HTTP methods
@@ -50,7 +50,7 @@ class Route<TClass = Function> extends RouteGenerator {
     public handlers: RouteHandler[]
   ) {
     super()
-    this.path = cleanPath(path)
+    this.path = path
     this.pathParts = this.path.split('/')
     for (const part of this.pathParts) {
       if (part.startsWith(':')) {
@@ -70,7 +70,7 @@ class Route<TClass = Function> extends RouteGenerator {
   }
 
   public parsePath(path: string) {
-    const requestParts = cleanPath(path).split('/')
+    const requestParts = path.split('/')
     if (requestParts.length !== this.pathParts.length) return false
     for (let i = 0; i < this.pathParts.length; i++) {
       const part = this.pathParts[i]
@@ -168,9 +168,20 @@ export class Server<TRoutes extends Record<string, unknown>> {
   public routes: Record<keyof TRoutes, Route>
 
   /**
+   * The Router
+   */
+  private router = new Router()
+
+  /**
    * The server instance
    */
   public instance: BunServer
+
+  addRoute(path: string, route: Route) {
+    const store = this.router.register<Route>(path)
+    store[0] = route
+    return store
+  }
 
   /**
    * @param routes An object containing the routes to serve
@@ -180,18 +191,15 @@ export class Server<TRoutes extends Record<string, unknown>> {
     routes: TRoutes,
     public options?: ServerOptions
   ) {
-    const routeMap: Record<string, Route> = {}
     for (const route of Object.values(routes)) {
       if (!(route instanceof Route)) {
         throw new Error(
           `Did you forget to apply the decorator?\nInvalid route class: \n${route}`
         )
       }
-      if (routeMap[route.path]) {
-        throw new Error(`Duplicate route path: ${route.path}`)
-      }
-      routeMap[route.path] = route
+      this.addRoute(route.path, route)
     }
+    const routeMap = this.router
     this.routes = routes as Record<keyof TRoutes, Route>
     if (
       options?.fetch !== undefined &&
@@ -205,10 +213,7 @@ export class Server<TRoutes extends Record<string, unknown>> {
     this.instance = Bun.serve({
       async fetch(request) {
         const url = new URL(request.url)
-        const route = Object.values(routeMap).find((route) => {
-          if (route.parsePath(url.pathname)) return true
-          return false
-        })
+        const route = routeMap.find<Route>(url.pathname)
         if (!route) {
           return Response.json(
             { error: `Route not found for ${request.url}` },
@@ -229,7 +234,7 @@ export class Server<TRoutes extends Record<string, unknown>> {
         )
         if (middlewareResponse instanceof Response) return middlewareResponse
         if (middlewareResponse instanceof Request) request = middlewareResponse
-        return route[method](request, route.params)
+        return route.store[0][method](request, route.params)
       },
       ...options
     })

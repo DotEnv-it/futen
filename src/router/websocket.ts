@@ -1,6 +1,5 @@
 import { Server as BunServer, ServerWebSocket } from 'bun'
 import { Middleware, runMiddleware } from './middleware'
-import { cleanPath } from './util'
 
 enum WebSocketEvents {
   message = 'message',
@@ -31,7 +30,7 @@ class WebSocket<TClass = Function> extends WebSocketGenerator {
     public port?: number
   ) {
     super()
-    this.path = cleanPath(path)
+    this.path = path
     this.pathParts = this.path.split('/')
     for (const part of this.pathParts) {
       if (part.startsWith(':')) {
@@ -51,7 +50,7 @@ class WebSocket<TClass = Function> extends WebSocketGenerator {
   }
 
   public parsePath(path: string) {
-    const requestParts = cleanPath(path).split('/')
+    const requestParts = path.split('/')
     if (requestParts.length !== this.pathParts.length) return false
     for (let i = 0; i < this.pathParts.length; i++) {
       const part = this.pathParts[i]
@@ -137,7 +136,7 @@ export class WebSocketServer<
       }
       if (socket.port === undefined) socket.port = 443
       if (!this.wsMap[socket.port]) this.wsMap[socket.port] = {}
-      const path = cleanPath(socket.path)
+      const path = socket.path
       if (this.wsMap[socket.port][path]) {
         throw new Error(
           `Duplicate WebSocket path: ${path} on port ${socket.port}`
