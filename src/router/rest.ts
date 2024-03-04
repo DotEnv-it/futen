@@ -178,7 +178,7 @@ export class Server<TRoutes extends Record<string, unknown>> {
   public instance: BunServer
 
   addRoute(path: string, route: Route) {
-    const store = this.router.register<Route>(path)
+    const store = this.router.register(path)
     store[0] = route
     return store
   }
@@ -213,7 +213,7 @@ export class Server<TRoutes extends Record<string, unknown>> {
     this.instance = Bun.serve({
       async fetch(request) {
         const url = new URL(request.url)
-        const route = routeMap.find<Route>(url.pathname)
+        const route = routeMap.find(url.pathname)
         if (!route) {
           return Response.json(
             { error: `Route not found for ${request.url}` },
