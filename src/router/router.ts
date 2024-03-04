@@ -1,13 +1,13 @@
-interface Node {
+interface Node<T = any> {
   pathPart: string
-  store: any | null
+  store: T | null
   staticChildren: Map<number, Node> | null
   parametricChild: {
     paramName: string
-    store: any | null
+    store: T | null
     staticChild: Node | null
   } | null
-  wildcardStore: any | null
+  wildcardStore: T | null
 }
 
 type ParametricNode = NonNullable<Node['parametricChild']>
@@ -39,7 +39,7 @@ export default class Router {
     this._storeFactory = storeFactory
   }
 
-  register(path: string): any {
+  register<T>(path: string): T {
     if (typeof path !== 'string') {
       throw new TypeError('Route path must be a string')
     }
