@@ -1,9 +1,9 @@
 import { describe, test, expect } from 'bun:test'
-import { WebSocketServer, ws } from '../dist/router/websocket.mjs'
+import { WebSocketServer, ws } from '../dist/index.mjs'
 import { ServerWebSocket } from 'bun'
 
 describe('WebSocket', () => {
-  @ws('/websocket1', 0)
+  @ws('/websocket1')
   class WebSocket1 {
     message(ws: ServerWebSocket, message: string) {
       return ws.send(message + ' I received your message')
@@ -56,17 +56,19 @@ describe('WebSocket', () => {
     }
   }
 
-  const wsServer = new WebSocketServer({
-    WebSocket1,
-    WebSocket2
-  })
+  const wsServer = new WebSocketServer(
+    {
+      WebSocket1,
+      WebSocket2
+    },
+    {
+      port: 0
+    }
+  )
 
-  const randomPort = wsServer.instances[0].port
-  const fixedPort = wsServer.instances[1].port
-
+  const randomPort = wsServer.instance.port
   test('should verify the ports of the instances', () => {
     expect(randomPort).toBeGreaterThan(0)
-    expect(fixedPort).toBe(443)
   })
 
   test('should verify the paths of the instances', () => {
@@ -88,11 +90,11 @@ describe('WebSocket', () => {
   })
 
   test('should verify the message event with params of the instances', async () => {
-    const ws = new WebSocket(`ws://localhost:${fixedPort}/websocket2/1/2`)
+    const ws = new WebSocket(`ws://localhost:${randomPort}/websocket2/1/2`)
     let expectsFired = 0
     ws.onmessage = (event) => {
       expect(event.data).toBe(
-        'WebSocket opened from SecondWebSocket with params {"id":"1","id2":"2"}'
+        'WebSocket opened from SecondWebSocket with params {"id2":"2","id":"1"}'
       )
       ws.close()
       expectsFired++
@@ -103,7 +105,7 @@ describe('WebSocket', () => {
   })
 
   test('should verify the close event of the instances', async () => {
-    const ws = new WebSocket(`ws://localhost:${fixedPort}/websocket2/1/2`)
+    const ws = new WebSocket(`ws://localhost:${randomPort}/websocket2/1/2`)
     let expectsFired = 0
     ws.onclose = (event) => {
       expect(event.code).toBe(1000)
