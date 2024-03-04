@@ -1,57 +1,23 @@
-type Node<T = any> = {
+interface Node<T = any> {
   pathPart: string
-  store: Record<string, T> | null
+  store: T | null
   staticChildren: Map<number, Node> | null
-  parametricChild: Node | null
-  wildcardStore: Record<string, T> | null
+  parametricChild: {
+    paramName: string
+    store: T | null
+    staticChild: Node | null
+  } | null
+  wildcardStore: T | null
 }
 
-function createNode(pathPart: string, staticChildren: Node[] = []): Node {
-  return {
-    pathPart,
-    store: null,
-    staticChildren:
-      staticChildren === undefined
-        ? null
-        : new Map(
-          staticChildren.map((child) => [child.pathPart.charCodeAt(0), child])
-        ),
-    parametricChild: null,
-    wildcardStore: null
-  }
-}
-
-function cloneNode(node: Node, newPathPart: string): Node {
-  return {
-    pathPart: newPathPart,
-    store: node.store,
-    staticChildren: node.staticChildren,
-    parametricChild: node.parametricChild,
-    wildcardStore: node.wildcardStore
-  }
-}
-
-function createParametricNode(paramName: string): Node {
-  return {
-    pathPart: paramName,
-    store: null,
-    staticChildren: null,
-    parametricChild: null,
-    wildcardStore: null
-  }
-}
-
-function defaultStoreFactory(): Record<string, unknown> {
-  return Object.create(null)
-}
+type ParametricNode = NonNullable<Node['parametricChild']>
+type StoreFactory = () => any
 
 export default class Router {
   private _root: Node
-  private _storeFactory: () => Record<string, unknown>
+  private _storeFactory: StoreFactory
 
-  constructor({
-    storeFactory
-  }: { storeFactory?: () => Record<string, unknown> } = {}) {
+  constructor({ storeFactory }: { storeFactory?: StoreFactory } = {}) {
     if (storeFactory === undefined) {
       storeFactory = defaultStoreFactory
     } else if (typeof storeFactory === 'function') {
@@ -73,7 +39,7 @@ export default class Router {
     this._storeFactory = storeFactory
   }
 
-  register<T>(path: string | string[]): Record<string, T> {
+  register<T>(path: string): T {
     if (typeof path !== 'string') {
       throw new TypeError('Route path must be a string')
     }
@@ -103,34 +69,33 @@ export default class Router {
       let pathPart = staticParts[i]
 
       if (i > 0) {
+        // Set parametric properties on the node
         const paramName = paramParts[paramPartsIndex++].slice(1)
 
         if (node.parametricChild === null) {
           node.parametricChild = createParametricNode(paramName)
-        } else if (node.parametricChild.pathPart !== paramName) {
+        } else if (node.parametricChild.paramName !== paramName) {
           throw new Error(
             `Cannot create route "${path}" with parameter "${paramName}" ` +
               'because a route already exists with a different parameter name ' +
-              `("${node.parametricChild.pathPart}") in the same location`
+              `("${node.parametricChild.paramName}") in the same location`
           )
         }
 
         const { parametricChild } = node
 
-        if (parametricChild.staticChildren === null) {
-          parametricChild.staticChildren = createNode(
-            pathPart
-          ) as unknown as Map<number, Node>
-          node = parametricChild.staticChildren as unknown as Node
+        if (parametricChild.staticChild === null) {
+          node = parametricChild.staticChild = createNode(pathPart)
           continue
         }
 
-        node = parametricChild.staticChildren as unknown as Node
+        node = parametricChild.staticChild
       }
 
       for (let j = 0; ;) {
         if (j === pathPart.length) {
           if (j < node.pathPart.length) {
+            // Move the current node down
             const childNode = cloneNode(node, node.pathPart.slice(j))
             Object.assign(node, createNode(pathPart, [childNode]))
           }
@@ -138,15 +103,18 @@ export default class Router {
         }
 
         if (j === node.pathPart.length) {
+          // Add static child
           if (node.staticChildren === null) {
             node.staticChildren = new Map()
           } else if (node.staticChildren.has(pathPart.charCodeAt(j))) {
+            // Re-run loop with existing static node
             node = node.staticChildren.get(pathPart.charCodeAt(j))!
             pathPart = pathPart.slice(j)
             j = 0
             continue
           }
 
+          // Create new node
           const childNode = createNode(pathPart.slice(j))
           node.staticChildren.set(pathPart.charCodeAt(j), childNode)
           node = childNode
@@ -155,6 +123,7 @@ export default class Router {
         }
 
         if (pathPart[j] !== node.pathPart[j]) {
+          // Split the node
           const existingChild = cloneNode(node, node.pathPart.slice(j))
           const newChild = createNode(pathPart.slice(j))
 
@@ -173,16 +142,17 @@ export default class Router {
     }
 
     if (paramPartsIndex < paramParts.length) {
+      // The final part is a parameter
       const param = paramParts[paramPartsIndex]
       const paramName = param.slice(1)
 
       if (node.parametricChild === null) {
         node.parametricChild = createParametricNode(paramName)
-      } else if (node.parametricChild.pathPart !== paramName) {
+      } else if (node.parametricChild.paramName !== paramName) {
         throw new Error(
           `Cannot create route "${path}" with parameter "${paramName}" ` +
             'because a route already exists with a different parameter name ' +
-            `("${node.parametricChild.pathPart}") in the same location`
+            `("${node.parametricChild.paramName}") in the same location`
         )
       }
 
@@ -194,6 +164,7 @@ export default class Router {
     }
 
     if (endsWithWildcard) {
+      // The final part is a wildcard
       if (node.wildcardStore === null) {
         node.wildcardStore = this._storeFactory()
       }
@@ -201,6 +172,7 @@ export default class Router {
       return node.wildcardStore
     }
 
+    // The final part is static
     if (node.store === null) {
       node.store = this._storeFactory()
     }
@@ -208,9 +180,7 @@ export default class Router {
     return node.store
   }
 
-  find<T>(
-    url: string
-  ): { store: Record<string, T>; params: Record<string, string> } | null {
+  find(url: string): { store: any; params: Record<string, string> } | null {
     if (url === '' || url[0] !== '/') {
       return null
     }
@@ -222,22 +192,62 @@ export default class Router {
   }
 }
 
-function matchRoute<T>(
+function createNode(pathPart: string, staticChildren?: Node[]): Node {
+  return {
+    pathPart,
+    store: null,
+    staticChildren:
+      staticChildren === undefined
+        ? null
+        : new Map(
+          staticChildren.map((child) => [child.pathPart.charCodeAt(0), child])
+        ),
+    parametricChild: null,
+    wildcardStore: null
+  }
+}
+
+function cloneNode(node: Node, newPathPart: string): Node {
+  return {
+    pathPart: newPathPart,
+    store: node.store,
+    staticChildren: node.staticChildren,
+    parametricChild: node.parametricChild,
+    wildcardStore: node.wildcardStore
+  }
+}
+
+function createParametricNode(paramName: string): ParametricNode {
+  return {
+    paramName,
+    store: null,
+    staticChild: null
+  }
+}
+
+function defaultStoreFactory(): any {
+  return Object.create(null)
+}
+
+function matchRoute(
   url: string,
   urlLength: number,
   node: Node,
   startIndex: number
-): { store: Record<string, T>; params: Record<string, string> } | null {
+): { store: any; params: Record<string, string> } | null {
   const { pathPart } = node
   const pathPartLen = pathPart.length
   const pathPartEndIndex = startIndex + pathPartLen
 
+  // Only check the pathPart if its length is > 1 since the parent has
+  // already checked that the url matches the first character
   if (pathPartLen > 1) {
     if (pathPartEndIndex > urlLength) {
       return null
     }
 
     if (pathPartLen < 15) {
+      // Using a loop is faster for short strings
       for (let i = 1, j = startIndex + 1; i < pathPartLen; ++i, ++j) {
         if (pathPart[i] !== url[j]) {
           return null
@@ -251,6 +261,7 @@ function matchRoute<T>(
   startIndex = pathPartEndIndex
 
   if (startIndex === urlLength) {
+    // Reached the end of the URL
     if (node.store !== null) {
       return {
         store: node.store,
@@ -272,7 +283,7 @@ function matchRoute<T>(
     const staticChild = node.staticChildren.get(url.charCodeAt(startIndex))
 
     if (staticChild !== undefined) {
-      const route = matchRoute<T>(url, urlLength, staticChild, startIndex)
+      const route = matchRoute(url, urlLength, staticChild, startIndex)
 
       if (route !== null) {
         return route
@@ -285,26 +296,26 @@ function matchRoute<T>(
     const slashIndex = url.indexOf('/', startIndex)
 
     if (slashIndex !== startIndex) {
+      // Params cannot be empty
       if (slashIndex === -1 || slashIndex >= urlLength) {
         if (parametricNode.store !== null) {
-          const params: Record<string, string> = {}
-          params[parametricNode.pathPart] = url.slice(startIndex, urlLength)
+          const params: Record<string, string> = {} // This is much faster than using a computed property
+          params[parametricNode.paramName] = url.slice(startIndex, urlLength)
           return {
             store: parametricNode.store,
             params
           }
         }
-      } else if (parametricNode.staticChildren !== null) {
-        const route = matchRoute<T>(
+      } else if (parametricNode.staticChild !== null) {
+        const route = matchRoute(
           url,
           urlLength,
-          // @ts-expect-error - TS doesn't understand that `parametricNode` can be both a `Node` and a `Map`
-          parametricNode.staticChildren,
+          parametricNode.staticChild,
           slashIndex
         )
 
         if (route !== null) {
-          route.params[parametricNode.pathPart] = url.slice(
+          route.params[parametricNode.paramName] = url.slice(
             startIndex,
             slashIndex
           )

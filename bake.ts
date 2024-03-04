@@ -3,7 +3,7 @@ import { Options, build } from 'tsup'
 
 const commonConfig = {
   entry: ['./src/**/*.ts'],
-  sourcemap: true,
+  sourcemap: false,
   clean: true,
   dts: true,
   minify: true,
