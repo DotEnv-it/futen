@@ -153,13 +153,6 @@ export class WebSocketServer<
             status: 404
           })
         }
-        if (
-          !server.upgrade(request, {
-            data: { route: wsRoute.store[0].path, params: wsRoute.params }
-          })
-        ) {
-          return new Response('Upgrade failed!', { status: 500 })
-        }
         const middlewareResponse = runMiddleware(
           request,
           options?.middleware,
@@ -167,6 +160,13 @@ export class WebSocketServer<
         )
         if (middlewareResponse instanceof Response) return middlewareResponse
         if (middlewareResponse instanceof Request) request = middlewareResponse
+        if (
+          !server.upgrade(request, {
+            data: { route: wsRoute.store[0].path, params: wsRoute.params }
+          })
+        ) {
+          return new Response('Upgrade failed!', { status: 500 })
+        }
         return new Response(null, { status: 101 })
       },
       websocket: webSocketRouterHandler(routeMap),
