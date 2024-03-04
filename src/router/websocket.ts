@@ -3,8 +3,8 @@ import {
   ServerWebSocket,
   WebSocketServeOptions
 } from 'bun'
-import { Middleware, runMiddleware } from './middleware'
-import Router from './router'
+import { Middleware, runMiddleware } from './middleware.ts'
+import Router from './router.ts'
 
 enum WebSocketEvents {
   message = 'message',
