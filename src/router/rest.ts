@@ -69,19 +69,6 @@ class Route<TClass = Function> extends RouteGenerator {
     return this
   }
 
-  public parsePath(path: string) {
-    const requestParts = path.split('/')
-    if (requestParts.length !== this.pathParts.length) return false
-    for (let i = 0; i < this.pathParts.length; i++) {
-      const part = this.pathParts[i]
-      if (!(part.charAt(0) === ':' || part === requestParts[i])) return false
-      if (part.charAt(0) === ':') {
-        this.parameters[part.slice(1)] = requestParts[i]
-      }
-    }
-    return true
-  }
-
   public get params() {
     return this.parameters
   }
@@ -177,10 +164,9 @@ export class Server<TRoutes extends Record<string, unknown>> {
    */
   public instance: BunServer
 
-  addRoute(path: string, route: Route) {
-    const store = this.router.register(path)
+  private addRoute<T>(path: string, route: T) {
+    const store = this.router.register<Record<number, T>>(path)
     store[0] = route
-    return store
   }
 
   /**
@@ -212,19 +198,19 @@ export class Server<TRoutes extends Record<string, unknown>> {
     }
     this.instance = Bun.serve({
       async fetch(request) {
+        const method = request.method as HTTPMethodString
+        if (!HTTPMethods[method]) {
+          return Response.json(
+            { error: `Invalid method: ${method}` },
+            { status: 405 }
+          )
+        }
         const url = new URL(request.url)
         const route = routeMap.find(url.pathname)
         if (!route) {
           return Response.json(
             { error: `Route not found for ${request.url}` },
             { status: 404 }
-          )
-        }
-        const method = request.method as HTTPMethodString
-        if (!HTTPMethods[method]) {
-          return Response.json(
-            { error: `Invalid method: ${method}` },
-            { status: 405 }
           )
         }
         const middlewareResponse = runMiddleware(
