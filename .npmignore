@@ -2,6 +2,7 @@
 .husky
 src
 examples
+benchmarks
 tests
 bake.ts
 
