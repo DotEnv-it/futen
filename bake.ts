@@ -1,9 +1,9 @@
-import { $ } from 'bun'
+// import { $ } from 'bun'
 import { Options, build } from 'tsup'
 
 const commonConfig = {
   entry: ['./src/**/*.ts'],
-  sourcemap: true,
+  sourcemap: false,
   clean: true,
   dts: true,
   minify: true,
@@ -16,13 +16,13 @@ const builds = [
     format: 'esm',
     outDir: './dist',
     ...commonConfig
-  }),
-  build({
-    name: 'compile cjs',
-    format: 'cjs',
-    outDir: './dist/cjs',
-    ...commonConfig
   })
+  // build({
+  //   name: 'compile cjs',
+  //   format: 'cjs',
+  //   outDir: './dist/cjs',
+  //   ...commonConfig
+  // })
 ]
 
 console.info('Building...')
@@ -37,9 +37,9 @@ await Bun.build({
   sourcemap: 'external'
 })
 
-console.info('Preparing the type files...')
-await $`cp dist/cjs/*.d.ts dist/`
-await $`cp dist/cjs/router/*.d.ts dist/router/`
+// console.info('Preparing the type files...')
+// await $`cp dist/cjs/*.d.ts dist/`
+// await $`cp dist/cjs/router/*.d.ts dist/router/`
 console.info('Done!')
 
 process.exit()

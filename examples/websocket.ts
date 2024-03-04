@@ -58,5 +58,4 @@ const wsServer = new WebSocketServer(
   }
 )
 
-const openWSPorts = wsServer.instances.map((instance) => instance.port)
-console.log(`Active WebSockets: ${openWSPorts.join(', ')}`)
+console.log(`Active WebSocket port: ${wsServer.instance.port}`)

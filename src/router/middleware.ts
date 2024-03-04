@@ -1,4 +1,4 @@
-import { cleanPath, wildcardMatchRegExp } from './util'
+import { wildcardMatchRegExp } from './util'
 
 export type Middleware = {
   /**
@@ -56,7 +56,7 @@ export function runMiddleware(
 ) {
   if (middleware === undefined) return
   if (typeof middlewarePaths === 'string') middlewarePaths = [middlewarePaths]
-  const path = cleanPath(new URL(request.url).pathname)
+  const path = new URL(request.url).pathname
   for (let i = 0; i < middlewarePaths.length; i++) {
     if (wildcardMatchRegExp(path, middlewarePaths[i])) {
       return middleware(request)

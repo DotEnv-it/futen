@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'bun:test'
-import { Server, route } from '../dist/router/rest.mjs'
+import { Server, route } from '../dist/index.mjs'
 
 describe('ROUTING', () => {
   @route('/')
@@ -85,8 +85,8 @@ describe('PATH STRESS', () => {
     '/user',
     '/user/:userID',
     '/user/:userID/posts',
-    // '/static/js/*',
-    // '/static/*',
+    '/static/js/*',
+    '/static/*',
     '/api/login',
     '/api/projects',
     '/api/people',
@@ -123,10 +123,37 @@ describe('PATH STRESS', () => {
       code: 200,
       body: { path: '/user/:userID/posts', params: { userID: '0123456789' } }
     },
-    // '/static/js/common.js': { code: 200, body: { path: '/static/js/*', params: {} } },
-    // '/static/json/config.json': { code: 200, body: { path: '/static/*', params: {} } },
-    // '/static/css/styles.css': { code: 200, body: { path: '/static/*', params: {} } },
-    // '/static/': { code: 200, body: { path: '/static/*', params: {} } },
+    '/static/js/common.js': {
+      code: 200,
+      body: { path: '/static/js/*', params: { '*': 'common.js' } }
+    },
+    '/static/json/config.json': {
+      code: 200,
+      body: {
+        path: '/static/*',
+        params: {
+          '*': 'json/config.json'
+        }
+      }
+    },
+    '/static/css/styles.css': {
+      code: 200,
+      body: {
+        path: '/static/*',
+        params: {
+          '*': 'css/styles.css'
+        }
+      }
+    },
+    '/static/': {
+      code: 200,
+      body: {
+        path: '/static/*',
+        params: {
+          '*': ''
+        }
+      }
+    },
     '/api/login': { code: 200, body: { path: '/api/login', params: {} } },
     '/api/postings/details/misc/many/nodes/deep': {
       code: 200,
