@@ -2,7 +2,7 @@ import { Server, route } from '../src/router/rest'
 
 @route('/')
 class Home {
-  GET() {
+  get() {
     const routes = Object.entries(server.routes).map(([routeClass, route]) => {
       return {
         class: routeClass,
@@ -18,13 +18,13 @@ class Home {
 
 @route('/test')
 class Test {
-  async POST(request: Request) {
+  async post(request: Request) {
     return Response.json({ object: await request.json() })
   }
 }
 
 // class SomeInvalidRoute {
-//   GET() {
+//   get() {
 //     return Response.json({ "message": "This is an invalid request, you will never see this message as a response" });
 //   }
 // }

@@ -1,29 +1,29 @@
 import { describe, test, expect } from 'bun:test'
-import { Server, route } from '../dist/index.mjs'
+import { HTTPServer, route } from '../dist/index.mjs'
 
 describe('ROUTING', () => {
   @route('/')
   class Home {
-    GET() {
+    get() {
       return Response.json({ hello: 'world' })
     }
   }
 
   @route('/test')
   class Test {
-    POST() {
+    post() {
       return Response.json({ hello: 'world' })
     }
   }
 
   @route('/test/:id')
   class TestWithParams {
-    GET(_reqest: Request, params: { id: string }) {
+    get(_reqest: Request, params: { id: string }) {
       return Response.json({ id: params.id })
     }
   }
 
-  const server = new Server(
+  const server = new HTTPServer(
     {
       Home,
       Test,
@@ -71,7 +71,7 @@ class RouteFactory {
   static create(path: string) {
     @route(path)
     class Route {
-      GET(_request: Request, params: any) {
+      get(_request: Request, params: any) {
         return Response.json({ path, params })
       }
     }
@@ -230,7 +230,7 @@ describe('PATH STRESS', () => {
     Routes[path] = RouteFactory.create(path)
   }
 
-  const server = new Server(Routes, {
+  const server = new HTTPServer(Routes, {
     port: 0
   })
 

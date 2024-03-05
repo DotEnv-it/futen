@@ -5,94 +5,63 @@ import {
 } from 'bun'
 import { Middleware, runMiddleware } from './middleware.ts'
 import Router from './router.ts'
+import { Route } from './core.ts'
 
-enum WebSocketEvents {
-  message = 'message',
-  open = 'open',
-  close = 'close',
-  drain = 'drain',
-  error = 'error',
-  ping = 'ping',
-  pong = 'pong'
-}
-type WebSocketEventString = keyof typeof WebSocketEvents
-const WebSocketEventKeys = Object.keys(WebSocketEvents)
+// type BaseWSHandler<T extends Record<string, unknown> = any> = (ws: BunServerWebSocket, ...args: T[keyof T][]) => void | Promise<void>
+/**
+ * Standard WebSocket events which are automatically picked up by the router
+ * ---
+ * Compatible with Bun base WebSocket server
+ * @link https://bun.sh/docs/api/websockets#reference
+ */
+export const WSRoute = {
+  message: (
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _ws: ServerWebSocket,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _message: string | ArrayBuffer | Uint8Array
+  ) => {},
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  open: (_ws: ServerWebSocket) => {},
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  close: (_ws: ServerWebSocket, _code: number, _reason: string) => {},
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  drain: (_ws: ServerWebSocket) => {},
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  ping: (_ws: ServerWebSocket, _data: Buffer) => {},
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  pong: (_ws: ServerWebSocket, _data: Buffer) => {}
+} satisfies WebSocketServeOptions['websocket']
 
-type WebSocketHandler = (socket: ServerWebSocket, ...args: any[]) => void
-type WebSocketMethods = { [event in WebSocketEventString]: WebSocketHandler }
-
-interface WebSocketGenerator extends WebSocketMethods {}
-abstract class WebSocketGenerator {}
-for (const event in WebSocketEvents) {
-  WebSocketGenerator.prototype[event as WebSocketEventString] = function () {}
-}
-
-class WebSocket<TClass = Function> extends WebSocketGenerator {
-  private parameters: Record<string, string> = {}
-  private pathParts: string[]
-  constructor(
-    public path: string,
-    public target: TClass,
-    public handlers: WebSocketHandler[]
-  ) {
-    super()
-    this.path = path
-    this.pathParts = this.path.split('/')
-    for (const part of this.pathParts) {
-      if (part.startsWith(':')) {
-        const pathSlice = part.slice(1)
-        if (this.parameters[pathSlice] !== undefined) {
-          throw new Error(`Duplicate path parameter names in ${this.path}`)
-        }
-        this.parameters[pathSlice] = ''
-      }
-    }
-    if (handlers.length > 0) {
-      for (const method of handlers) {
-        this[method.name as WebSocketEventString] = method
-      }
-    }
-    return this
-  }
-
-  public get params() {
-    return this.parameters
-  }
-}
-
+/**
+ * Decorator for WebSocket routes
+ * ---
+ * This decorator is used to define WebSocket routes
+ * @param path - The path of the route
+ */
 export function ws(path: string) {
-  return <TClass extends new (...args: any[]) => any>(
-    target: TClass,
+  return function <T extends new (...args: any[]) => any>(
+    target: T,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Context is a mandatory parameter but is always undefined in this case
-    _context: ClassDecoratorContext<TClass>
-  ) => {
-    if (typeof target !== 'function' || !target.prototype) {
-      throw new Error('WebSocket decorator can only be used on classes')
-    }
-    const handlers: WebSocketHandler[] = []
-    for (let i = 0; i < WebSocketEventKeys.length; i++) {
-      const method = target.prototype[WebSocketEventKeys[i]] as WebSocketHandler
-      if (typeof method === 'function') {
-        handlers.push(method)
-      }
-    }
-    return new WebSocket(path, target, handlers) as WebSocket<TClass> & TClass // https://github.com/Microsoft/TypeScript/issues/4881
+    _context: ClassDecoratorContext<T>
+  ) {
+    return new Route(target, path, 'ws') as Route & typeof WSRoute & T
   }
 }
 
 function webSocketRouterHandler(routes: Router) {
-  const router = {} as WebSocketMethods
-  for (const event in WebSocketEvents) {
-    router[event as WebSocketEventString] = function (
-      socket: ServerWebSocket<any>,
+  const router = {} as typeof WSRoute
+  for (const event in WSRoute) {
+    router[event as keyof typeof WSRoute] = function (
+      ws: ServerWebSocket<any>,
       ...args: any[]
     ) {
-      const route = routes.find(socket.data.route)
+      const route = routes.find(ws.data.route)
       if (route === null) return
-      return route.store[0][event as WebSocketEventString](
-        socket,
+      return route.store[0][event as keyof typeof WSRoute](
+        ws,
         ...args,
-        socket.data.params
+        ws.data.params
       )
     }
   }
@@ -103,13 +72,11 @@ type WebSocketServerOptions = {
   [key in keyof WebSocketServeOptions]?: WebSocketServeOptions[key]
 } & Middleware
 
-export class WebSocketServer<
-  TWSRoutes extends Record<string, unknown> = Record<string, WebSocket>
-> {
+export class WebSocketServer<T extends Record<string, unknown>> {
   /**
    * The WebSocket instances
    */
-  public websockets: Record<keyof TWSRoutes, WebSocket>
+  public websockets: Record<keyof T, Route & typeof WSRoute>
 
   /**
    * The Router
@@ -126,10 +93,10 @@ export class WebSocketServer<
     store[0] = route
   }
 
-  constructor(websockets: TWSRoutes, options?: WebSocketServerOptions) {
-    this.websockets = websockets as Record<keyof TWSRoutes, WebSocket>
+  constructor(websockets: T, options?: WebSocketServerOptions) {
+    this.websockets = websockets as Record<keyof T, Route & typeof WSRoute>
     for (const socket of Object.values(this.websockets)) {
-      if (!(socket instanceof WebSocket)) {
+      if (!(socket instanceof Route)) {
         throw new Error(
           `Did you forget to apply the decorator?\nInvalid WebSocket class: \n${socket}`
         )

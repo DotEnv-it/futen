@@ -1,78 +1,28 @@
 import { Server as BunServer, ServeOptions } from 'bun'
 import { Middleware, runMiddleware } from './middleware.ts'
 import Router from './router.ts'
+import { Route } from './core.ts'
 
+function defaultHTTPHandler() {
+  return Response.json({ error: 'Method not implemented' }, { status: 405 })
+}
 /**
- * Cointains possible HTTP methods
+ * Standard HTTP methods which are automatically picked up by the router
+ * ---
+ * As described in the HTTP/1.1 specification (RFC 9110)
+ * @link https://www.rfc-editor.org/rfc/rfc9110.html
  */
-enum HTTPMethods {
-  GET = 'GET',
-  POST = 'POST',
-  PUT = 'PUT',
-  DELETE = 'DELETE',
-  PATCH = 'PATCH',
-  HEAD = 'HEAD',
-  OPTIONS = 'OPTIONS'
-}
-type HTTPMethodString = keyof typeof HTTPMethods
-const HTTPMethodKeys = Object.keys(HTTPMethods)
-
-type RouteHandler = (
-  request: Request,
-  params: Record<string, string>
-) => Response | Promise<Response>
-type RouteMethods = { [method in HTTPMethodString]: RouteHandler }
-
-interface RouteGenerator extends RouteMethods {}
-abstract class RouteGenerator {}
-for (const method in HTTPMethods) {
-  RouteGenerator.prototype[method as HTTPMethodString] = function () {
-    return Response.json(
-      { error: `Method not implemented: ${method}` },
-      { status: 405 }
-    )
-  }
-}
-
-class Route<TClass = Function> extends RouteGenerator {
-  private parameters: Record<string, string> = {}
-  private pathParts: string[]
-  /**
-   * Wrapper for the class to which the route decorator has been applied
-   *
-   * @param path The path assigned to the class
-   * @param target The class to which the route decorator has been applied
-   * @param handlers The methods of the class that are used as route handlers
-   */
-  constructor(
-    public path: string,
-    public target: TClass,
-    public handlers: RouteHandler[]
-  ) {
-    super()
-    this.path = path
-    this.pathParts = this.path.split('/')
-    for (const part of this.pathParts) {
-      if (part.startsWith(':')) {
-        const pathSlice = part.slice(1)
-        if (this.parameters[pathSlice] !== undefined) {
-          throw new Error(`Duplicate path parameter names in ${this.path}`)
-        }
-        this.parameters[pathSlice] = ''
-      }
-    }
-    if (handlers.length > 0) {
-      for (const method of handlers) {
-        this[method.name as HTTPMethodString] = method
-      }
-    }
-    return this
-  }
-
-  public get params() {
-    return this.parameters
-  }
-}
+export const HTTPRoute = {
+  get: defaultHTTPHandler,
+  head: defaultHTTPHandler,
+  post: defaultHTTPHandler,
+  put: defaultHTTPHandler,
+  delete: defaultHTTPHandler,
+  connect: defaultHTTPHandler,
+  options: defaultHTTPHandler,
+  trace: defaultHTTPHandler,
+  patch: defaultHTTPHandler
+} satisfies Record<string, ServeOptions['fetch']>
 
 /**
  * The route decorator assigns a path to a class within the server it is applied to.
@@ -85,7 +35,7 @@ class Route<TClass = Function> extends RouteGenerator {
  * ```ts
  * ⁣@route("/")
  * class Home {
- *  GET() {
+ *  get() {
  *   return Response.json({ "message": "Hello, world!" });
  *  }
  * }
@@ -97,7 +47,7 @@ class Route<TClass = Function> extends RouteGenerator {
  * ```ts
  * ⁣@route("/")
  * class Home {
- *  GET() {
+ *  get() {
  *   return Response.json({ "message": `Hello, world! You are at ${this.path}` }); // ⛔️ This will NOT work
  *  }
  * }
@@ -107,7 +57,7 @@ class Route<TClass = Function> extends RouteGenerator {
  * ```ts
  * ⁣@route("/")
  * class Home {
- *  GET() {
+ *  get() {
  *   return Response.json({ "message": `Hello, world! You are at ${server.routes.Home.path}` }); // ✅ This will work
  *  }
  * }
@@ -117,22 +67,12 @@ class Route<TClass = Function> extends RouteGenerator {
  * @returns A class decorator
  */
 export function route(path: string) {
-  return <TClass extends new (...args: any[]) => any>(
-    target: TClass,
+  return function <T extends new (...args: any[]) => any>(
+    target: T,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Context is a mandatory parameter but is always undefined in this case
-    _context: ClassDecoratorContext<TClass>
-  ) => {
-    if (typeof target !== 'function' || !target.prototype) {
-      throw new Error('Route decorator can only be used on classes')
-    }
-    const handlers: RouteHandler[] = []
-    for (let i = 0; i < HTTPMethodKeys.length; i++) {
-      const method = target.prototype[HTTPMethodKeys[i]] as RouteHandler
-      if (typeof method === 'function') {
-        handlers.push(method)
-      }
-    }
-    return new Route(path, target, handlers) as Route<TClass> & TClass // https://github.com/Microsoft/TypeScript/issues/4881
+    _context: ClassDecoratorContext<T>
+  ) {
+    return new Route(target, path, 'http') as Route & typeof HTTPRoute & T
   }
 }
 
@@ -148,11 +88,11 @@ type ServerOptions = {
  *
  * @see BunServer
  */
-export class Server<TRoutes extends Record<string, unknown>> {
+export class HTTPServer<T extends Record<string, unknown>> {
   /**
    * The routes that the server is serving
    */
-  public routes: Record<keyof TRoutes, Route>
+  public routes: Record<keyof T, Route & typeof HTTPRoute>
 
   /**
    * The Router
@@ -174,7 +114,7 @@ export class Server<TRoutes extends Record<string, unknown>> {
    * @param options Options to pass to the server
    */
   constructor(
-    routes: TRoutes,
+    routes: T,
     public options?: ServerOptions
   ) {
     for (const route of Object.values(routes)) {
@@ -186,7 +126,7 @@ export class Server<TRoutes extends Record<string, unknown>> {
       this.addRoute(route.path, route)
     }
     const routeMap = this.router
-    this.routes = routes as Record<keyof TRoutes, Route>
+    this.routes = routes as Record<keyof T, Route & typeof HTTPRoute>
     if (
       options?.fetch !== undefined &&
       process.env['OVERWRITE_FETCH'] !== 'true'
@@ -198,8 +138,8 @@ export class Server<TRoutes extends Record<string, unknown>> {
     }
     this.instance = Bun.serve({
       async fetch(request) {
-        const method = request.method as HTTPMethodString
-        if (!HTTPMethods[method]) {
+        const method = request.method.toLowerCase() as keyof typeof HTTPRoute
+        if (!HTTPRoute[method]) {
           return Response.json(
             { error: `Invalid method: ${method}` },
             { status: 405 }
