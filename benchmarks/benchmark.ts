@@ -1,5 +1,5 @@
 import Benchmark from 'benchmark'
-import { Server, route } from '../dist/index.mjs'
+import { HTTPServer, route } from '../dist/index.mjs'
 
 const routes = [
   '/',
@@ -70,13 +70,13 @@ for (const path of routes) {
   Routes[path] = RouteFactory.create(path)
 }
 
-const server = new Server(Routes, { port: 0 })
+const server = new HTTPServer(Routes, { port: 0 })
 
 const benchSuite = new Benchmark.Suite()
 
 for (const url of testURLs) {
   benchSuite.add(url + ' ', () => {
-    server.instance.fetch(new Request(`http://localhost:${server.instance.port}${url}`))
+    server.router.find(url)
   })
 }
 
