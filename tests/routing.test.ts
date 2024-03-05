@@ -212,10 +212,16 @@ describe('PATH STRESS', () => {
       }
     },
     '/404-not-found?q': { code: 404, body: {} },
-    '/v1/api/login': { code: 200, body: { path: '/v:version/api/login', params: { version: '1' } } },
+    '/v1/api/login': {
+      code: 200,
+      body: { path: '/v:version/api/login', params: { version: '1' } }
+    },
     '/user/v1/0123456789': {
       code: 200,
-      body: { path: '/user/v:version/:userID', params: { version: '1', userID: '0123456789' } }
+      body: {
+        path: '/user/v:version/:userID',
+        params: { version: '1', userID: '0123456789' }
+      }
     }
   }
 
