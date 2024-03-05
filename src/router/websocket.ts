@@ -11,7 +11,9 @@ enum WebSocketEvents {
   open = 'open',
   close = 'close',
   drain = 'drain',
-  error = 'error'
+  error = 'error',
+  ping = 'ping',
+  pong = 'pong'
 }
 type WebSocketEventString = keyof typeof WebSocketEvents
 const WebSocketEventKeys = Object.keys(WebSocketEvents)
