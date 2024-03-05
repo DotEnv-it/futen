@@ -15,18 +15,22 @@ import { Route } from './core.ts'
  * @link https://bun.sh/docs/api/websockets#reference
  */
 export const WSRoute = {
+  message: (
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _ws: ServerWebSocket,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _message: string | ArrayBuffer | Uint8Array
+  ) => {},
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  message: (_ws: ServerWebSocket, _message: string | ArrayBuffer | Uint8Array) => { },
+  open: (_ws: ServerWebSocket) => {},
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  open: (_ws: ServerWebSocket) => { },
+  close: (_ws: ServerWebSocket, _code: number, _reason: string) => {},
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  close: (_ws: ServerWebSocket, _code: number, _reason: string) => { },
+  drain: (_ws: ServerWebSocket) => {},
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  drain: (_ws: ServerWebSocket) => { },
+  ping: (_ws: ServerWebSocket, _data: Buffer) => {},
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  ping: (_ws: ServerWebSocket, _data: Buffer) => { },
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  pong: (_ws: ServerWebSocket, _data: Buffer) => { }
+  pong: (_ws: ServerWebSocket, _data: Buffer) => {}
 } satisfies WebSocketServeOptions['websocket']
 
 /**
@@ -36,7 +40,8 @@ export const WSRoute = {
  * @param path - The path of the route
  */
 export function ws(path: string) {
-  return function <T extends new (...args: any[]) => any>(target: T,
+  return function <T extends new (...args: any[]) => any>(
+    target: T,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Context is a mandatory parameter but is always undefined in this case
     _context: ClassDecoratorContext<T>
   ) {

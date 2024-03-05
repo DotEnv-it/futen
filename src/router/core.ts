@@ -4,7 +4,11 @@ import { WSRoute } from './websocket'
 /**
  * Generic helper function to override methods in a class
  */
-function overrideMethods<T>(target: T, methods: Record<string, Function>, override: Record<string, Function> = {}) {
+function overrideMethods<T>(
+  target: T,
+  methods: Record<string, Function>,
+  override: Record<string, Function> = {}
+) {
   for (const method in methods) {
     if (override[method]) {
       Object.defineProperty(target, method, {
@@ -31,7 +35,11 @@ function overrideMethods<T>(target: T, methods: Record<string, Function>, overri
  * It will take the target class and add the methods from it which override the default methods
  */
 export class Route {
-  constructor(public target: Function, public path: string, public typeOfRoute: 'http' | 'ws') {
+  constructor(
+    public target: Function,
+    public path: string,
+    public typeOfRoute: 'http' | 'ws'
+  ) {
     switch (typeOfRoute) {
       case 'http':
         overrideMethods(this, HTTPRoute, target.prototype)

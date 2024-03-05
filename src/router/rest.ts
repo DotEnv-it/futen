@@ -3,7 +3,9 @@ import { Middleware, runMiddleware } from './middleware.ts'
 import Router from './router.ts'
 import { Route } from './core.ts'
 
-function defaultHTTPHandler() { return Response.json({ error: 'Method not implemented' }, { status: 405 }) }
+function defaultHTTPHandler() {
+  return Response.json({ error: 'Method not implemented' }, { status: 405 })
+}
 /**
  * Standard HTTP methods which are automatically picked up by the router
  * ---
@@ -65,7 +67,8 @@ export const HTTPRoute = {
  * @returns A class decorator
  */
 export function route(path: string) {
-  return function <T extends new (...args: any[]) => any>(target: T,
+  return function <T extends new (...args: any[]) => any>(
+    target: T,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Context is a mandatory parameter but is always undefined in this case
     _context: ClassDecoratorContext<T>
   ) {
