@@ -1,29 +1,29 @@
 import { describe, test, expect } from 'bun:test'
-import { Server, route } from '../dist/index.mjs'
+import { HTTPServer, route } from '../dist/index.mjs'
 
 describe('ROUTING', () => {
   @route('/')
   class Home {
-    GET() {
+    get() {
       return Response.json({ hello: 'world' })
     }
   }
 
   @route('/test')
   class Test {
-    POST() {
+    post() {
       return Response.json({ hello: 'world' })
     }
   }
 
   @route('/test/:id')
   class TestWithParams {
-    GET(_reqest: Request, params: { id: string }) {
+    get(_reqest: Request, params: { id: string }) {
       return Response.json({ id: params.id })
     }
   }
 
-  const server = new Server(
+  const server = new HTTPServer(
     {
       Home,
       Test,
@@ -71,7 +71,7 @@ class RouteFactory {
   static create(path: string) {
     @route(path)
     class Route {
-      GET(_request: Request, params: any) {
+      get(_request: Request, params: any) {
         return Response.json({ path, params })
       }
     }
@@ -101,7 +101,9 @@ describe('PATH STRESS', () => {
     '/api/posts/:postID/comments',
     '/api/posts/:postID/comments/:commentID',
     '/medium/length/',
-    '/very/very/long/long/route/route/path'
+    '/very/very/long/long/route/route/path',
+    '/v:version/api/login',
+    '/user/v:version/:userID'
   ]
 
   const testURLs = {
@@ -185,7 +187,42 @@ describe('PATH STRESS', () => {
       code: 200,
       body: { path: '/very/very/long/long/route/route/path', params: {} }
     },
-    '/404-not-found': { code: 404, body: {} }
+    '/404-not-found': { code: 404, body: {} },
+    '/?q': { code: 200, body: { path: '/', params: {} } },
+    '/use?q': { code: 404, body: {} },
+    '/user?q': { code: 200, body: { path: '/user', params: {} } },
+    '/user/0123456789?q': {
+      code: 200,
+      body: { path: '/user/:userID', params: { userID: '0123456789' } }
+    },
+    '/user/0123456789?querystringisreallyreallylong': {
+      code: 200,
+      body: {
+        path: '/user/:userID',
+        params: { userID: '0123456789' }
+      }
+    },
+    '/static/css/styles.css?q': {
+      code: 200,
+      body: {
+        path: '/static/*',
+        params: {
+          '*': 'css/styles.css'
+        }
+      }
+    },
+    '/404-not-found?q': { code: 404, body: {} },
+    '/v1/api/login': {
+      code: 200,
+      body: { path: '/v:version/api/login', params: { version: '1' } }
+    },
+    '/user/v1/0123456789': {
+      code: 200,
+      body: {
+        path: '/user/v:version/:userID',
+        params: { version: '1', userID: '0123456789' }
+      }
+    }
   }
 
   const Routes: Record<string, any> = {}
@@ -193,7 +230,7 @@ describe('PATH STRESS', () => {
     Routes[path] = RouteFactory.create(path)
   }
 
-  const server = new Server(Routes, {
+  const server = new HTTPServer(Routes, {
     port: 0
   })
 

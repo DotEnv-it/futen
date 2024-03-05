@@ -1,16 +1,15 @@
 import { describe, test, expect } from 'bun:test'
-import { Server, route } from '../dist/index.mjs'
+import { HTTPServer, route } from '../dist/index.mjs'
 
 describe('REST', () => {
   @route('/')
   class Home {
-    GET() {
+    get() {
       const routes = Object.entries(server.routes).map(
         ([routeClass, route]) => {
           return {
             class: routeClass,
-            path: route.path,
-            methods: route.handlers.map((handler) => handler.name)
+            path: route.path
           }
         }
       )
@@ -22,12 +21,12 @@ describe('REST', () => {
 
   @route('/test')
   class Test {
-    async POST(request: Request) {
+    async post(request: Request) {
       return Response.json({ object: await request.json() })
     }
   }
 
-  const server = new Server(
+  const server = new HTTPServer(
     {
       Home,
       Test
@@ -51,13 +50,11 @@ describe('REST', () => {
       routes: [
         {
           class: 'Home',
-          path: '/',
-          methods: ['GET']
+          path: '/'
         },
         {
           class: 'Test',
-          path: '/test',
-          methods: ['POST']
+          path: '/test'
         }
       ]
     })
@@ -66,7 +63,7 @@ describe('REST', () => {
   test('should return request body', async () => {
     const response = await server.instance.fetch(
       new Request(`http://localhost:${port}/test`, {
-        method: 'POST',
+        method: 'post',
         body: JSON.stringify({ hello: 'world' })
       })
     )

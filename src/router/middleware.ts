@@ -1,4 +1,4 @@
-import { wildcardMatchRegExp } from './util'
+import { wildcardMatchRegExp } from './util.ts'
 
 export type Middleware = {
   /**

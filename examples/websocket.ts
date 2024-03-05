@@ -4,7 +4,7 @@ import { WebSocketServer, ws } from '../src/router/websocket'
 @ws('/websocket1')
 class WebSocket1 {
   message(ws: ServerWebSocket, message: string) {
-    console.log(message + ' from handyDandyWebSocket')
+    console.log(message + ' from websocket1')
     return ws.send(message)
   }
 
@@ -26,7 +26,7 @@ class WebSocket2 {
     message: string,
     _params: { id: string; id2: string }
   ) {
-    console.log(message + ' from asdjklfh')
+    console.log(message + ' from websocket2')
     return ws.send(message)
   }
 
@@ -36,12 +36,12 @@ class WebSocket2 {
     _message: string,
     _params: { id: string; id2: string }
   ) {
-    console.log('WebSocket closed from asdjklfh')
+    console.log('WebSocket closed from websocket2')
     return ws.close()
   }
 
   open(ws: ServerWebSocket, _params: { id: string; id2: string }) {
-    console.log('WebSocket opened from asdjklfh')
+    console.log('WebSocket opened from websocket2')
     return ws.send('Hello, world!')
   }
 }

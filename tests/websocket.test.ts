@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'bun:test'
-import { WebSocketServer, ws } from '../dist/index.mjs'
 import { ServerWebSocket } from 'bun'
+import { ws, WebSocketServer } from '../dist/index.mjs'
 
 describe('WebSocket', () => {
   @ws('/websocket1')
@@ -26,7 +26,7 @@ describe('WebSocket', () => {
       params: { id: string; id2: string }
     ) {
       if (message === 'Close me, please!') {
-        return wsServer.websockets.WebSocket2.close(
+        return wsServer.routes.WebSocket2.close(
           ws,
           1000,
           `Goodbye, world! from SecondWebSocket with params ${JSON.stringify(params)}`
@@ -72,8 +72,8 @@ describe('WebSocket', () => {
   })
 
   test('should verify the paths of the instances', () => {
-    expect(wsServer.websockets.WebSocket1.path).toBe('/websocket1')
-    expect(wsServer.websockets.WebSocket2.path).toBe('/websocket2/:id/:id2')
+    expect(wsServer.routes.WebSocket1.path).toBe('/websocket1')
+    expect(wsServer.routes.WebSocket2.path).toBe('/websocket2/:id/:id2')
   })
 
   test('should verify the message event of the instances', async () => {
