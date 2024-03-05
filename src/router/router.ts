@@ -1,3 +1,9 @@
+/*
+ * Based on @medley/router
+ * @link https://www.npmjs.com/package/@medley/router
+ * @link https://github.com/medleyjs/router
+ * @license MIT
+ */
 interface Node<T = any> {
   pathPart: string
   store: T | null
