@@ -1,9 +1,11 @@
 import { HTTPServer } from "../src/servers"
 import { middleware, route } from "../src/router/decorators"
 
-@middleware((request) => {
+@middleware([(request) => {
   console.log(`Request to ${request.url}`)
-})
+}, (request) => {
+  console.log(`Request to ${request.url} - The Second`)
+}])
 @route('/')
 class Home {
   get() {

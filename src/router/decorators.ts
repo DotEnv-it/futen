@@ -97,6 +97,26 @@ export function ws(path: string) {
  *   }
  * }
  * ```
+ *
+ * ---
+ *
+ * You can also apply multiple middleware to a single route by passing an array of middleware
+ * and they will be executed in the order they are passed.
+ * @example
+ *
+ * ```ts
+ * ⁣@middleware([(request) => {
+ * console.log(`Request to ${request.url}`)
+ * }, (request) => {
+ * console.log(`Request to ${request.url} - The Second`)
+ * }])
+ * ⁣@route("/")
+ * class Home {
+ *   get() {
+ *     return Response.json({ "message": "Hello, world!" });
+ *   }
+ * }
+ * ```
  */
 export function middleware(middleware: Middleware['middleware']) {
   return function <T extends new (...args: any[]) => any>(
