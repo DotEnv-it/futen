@@ -1,6 +1,6 @@
 {
   "name": "futen",
-  "version": "0.0.0-prerelease.21",
+  "version": "0.0.0-prerelease.22",
   "module": "dist/index.mjs",
   "types": "dist/index.d.mts",
   "repository": {
