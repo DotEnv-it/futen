@@ -1,59 +1,32 @@
-# **:triangular_flag_on_post: Futen**
+<h1 align="center"> ☁️ Futen 風天 (Heavenly Wind) </h1>
+<h2 align="center"> A (very) lightweight web framework, using decorators, simplifying syntax </h2>
 
-> A (very) lightweight web framework, using decorators, simplifying syntax.
+### **Get Started with:**
 
----
-
-## **:package: Main tools/Languages**
-
-- [x] Typescript
-- [x] Bun
-
----
-
-### **Installation**
-
-```bash
+```sh
 bun i futen
-```
----
 
-## **:wrench: Developer usage**
-
-### Lint, build, run tests
-
-```bash
-bun release:dry
+npm i futen
 ```
 
+### Build
+
+```sh
+bun bake
+```
+
 ---
 
-## **:handshake: Contributing**
+## **🤝 Contributing**
 
 - Fork it!
 - Read the [contributing guidelines](CONTRIBUTING.md)
 - Submit a pull request
 
----
-
-### **:heart: Show your support**
-
-Please :star: this repository if you like it or this project helped you! Feel free to open issues or submit pull-requests to help me improving my work.
-
----
-
-### **:scroll: Release history**
-
-* 0.0.0-prerelease.x
-  * Bug fixing before full release
-  * Improving code
-  * Adding functionality
-
----
-
-### **:robot: Author**
-
-_*Brian Ferri*_ ([GitHub](https://github.com/BioCla))
+## Contributors
+<a href = "https://github.com/dotenv-it/futen/contributors">
+  <img src = "https://contributors-img.web.app/image?repo=dotenv-it/futen"/>
+</a>
 
 ---
 
