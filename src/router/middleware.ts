@@ -25,7 +25,9 @@ export type Middleware = {
    * });
    * ```
    */
-  middleware?: (request: Request) => void | Request
+  middleware?:
+    | ((request: Request) => void | Request)
+    | ((request: Request) => void | Request)[]
   /**
    * MiddlewarePaths allows you to specify which paths the middleware should run on.
    *
@@ -53,11 +55,16 @@ export function runMiddleware(
   middlewarePaths: Middleware['middlewarePaths'] = ['*']
 ) {
   if (middleware === undefined) return
+  if (!(middleware instanceof Array)) middleware = [middleware]
   if (typeof middlewarePaths === 'string') middlewarePaths = [middlewarePaths]
   const path = new URL(request.url).pathname
   for (let i = 0; i < middlewarePaths.length; i++) {
     if (wildcardMatchRegExp(path, middlewarePaths[i])) {
-      return middleware(request)
+      let __request = request
+      for (let i = 0; i < middleware.length; i++) {
+        __request = middleware[i](__request) || __request
+      }
+      return __request
     }
   }
 }

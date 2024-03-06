@@ -126,7 +126,12 @@ export abstract class Server<T extends Record<string, unknown>, K> {
       serverMiddleware?.middlewarePaths
     )
     if (routeMiddleware !== undefined) {
-      middlewareResponse = routeMiddleware(request) || middlewareResponse
+      if (!(routeMiddleware instanceof Array)) { routeMiddleware = [routeMiddleware] }
+      let __request = middlewareResponse || request
+      for (let i = 0; i < routeMiddleware.length; i++) {
+        __request = routeMiddleware[i](__request) || __request
+      }
+      middlewareResponse = __request
     }
     return middlewareResponse || request
   }
