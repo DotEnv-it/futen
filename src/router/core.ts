@@ -49,6 +49,12 @@ export class Route {
     public path: string,
     public typeOfRoute: RouteType
   ) {
+    if (typeof target !== 'function') {
+      throw new Error(
+        'Invalid target, expected a class. ' +
+          'Make sure to apply the decorator to a class, not to a method or property.'
+      )
+    }
     switch (typeOfRoute) {
       case 'http':
         overrideMethods(this, HTTPMethod, target.prototype)
@@ -101,12 +107,28 @@ export abstract class Server<T extends Record<string, unknown>, K> {
       process.env['OVERWRITE_FETCH'] !== 'true'
     ) {
       console.warn(
-        'You are overwriting the fetch method. This may cause unexpected behavior.' +
-          'If you are sure you want to do this, set the OVERWRITE_FETCH environment variable to `true`'
+        'You are overwriting the fetch method. This may cause unexpected behavior. ' +
+          '\n\tIf you are sure you want to do this, set the OVERWRITE_FETCH environment variable to `true`'
       )
       delete options.fetch
     }
     return this
+  }
+
+  executeMiddlewareStack(
+    request: Request,
+    serverMiddleware?: Middleware,
+    routeMiddleware?: Middleware['middleware']
+  ) {
+    let middlewareResponse = runMiddleware(
+      request,
+      serverMiddleware?.middleware,
+      serverMiddleware?.middlewarePaths
+    )
+    if (routeMiddleware !== undefined) {
+      middlewareResponse = routeMiddleware(request) || middlewareResponse
+    }
+    return middlewareResponse || request
   }
 
   /**
@@ -123,24 +145,26 @@ export abstract class Server<T extends Record<string, unknown>, K> {
           status: 404
         })
       }
-      const middlewareResponse = runMiddleware(
-        request,
-        options?.middleware,
-        options?.middlewarePaths
-      )
-      if (middlewareResponse instanceof Response) return middlewareResponse
-      if (middlewareResponse instanceof Request) request = middlewareResponse
+      const routeStore = route.store[0]
+      if (routeStore.middleware || options?.middleware) {
+        const middlewareResponse = this.executeMiddlewareStack(
+          request,
+          options,
+          routeStore.middleware
+        )
+        request = middlewareResponse
+      }
       if (this.type === 'ws') {
         if (
           !server.upgrade(request, {
-            data: { route: route.store[0].path, params: route.params }
+            data: { route: routeStore.path, params: route.params }
           })
         ) {
           return new Response('Upgrade failed!', { status: 500 })
         }
         return new Response(null, { status: 101 })
       }
-      return route.store[0][request.method.toLowerCase()](request, route.params)
+      return routeStore[request.method.toLowerCase()](request, route.params)
     }
   }
 }

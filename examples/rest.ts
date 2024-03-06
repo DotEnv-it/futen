@@ -21,8 +21,17 @@ class Home {
 
 @route('/test')
 class Test {
+  // @route('/') // Throws
   async post(request: Request) {
     return Response.json({ object: await request.json() })
+  }
+
+  // @route('/') // Throws
+  private prop = 'This is a private property'
+
+  // @route('/') // Throws
+  method() {
+    return Response.json({ message: 'This is a method' })
   }
 }
 
@@ -54,7 +63,7 @@ const server = new HTTPServer(
       // request.headers.set("X-Server", "Cloudflare Workers");
       // return request;
     },
-    middlewarePaths: ['*/']
+    middlewarePaths: ['/test']
   }
 )
 

@@ -25,9 +25,7 @@ export type Middleware = {
    * });
    * ```
    */
-  middleware?: (
-    request: Request
-  ) => void | Request | Response | Promise<void | Request | Response>
+  middleware?: (request: Request) => void | Request
   /**
    * MiddlewarePaths allows you to specify which paths the middleware should run on.
    *

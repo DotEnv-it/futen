@@ -75,6 +75,28 @@ export function ws(path: string) {
 
 /**
  * Decorator to add middleware to a single route
+ *
+ * ---
+ *
+ * Executes arbitrary code before the route is called
+ *
+ * @param middleware - The middleware to apply to the route
+ *
+ * @example
+ *
+ * ```ts
+ * function logger(request: Request) {
+ *  console.log(`Request to ${request.url}`)
+ * }
+ *
+ * ⁣@middleware(logger)
+ * ⁣@route("/")
+ * class Home {
+ *   get() {
+ *     return Response.json({ "message": "Hello, world!" });
+ *   }
+ * }
+ * ```
  */
 export function middleware(middleware: Middleware['middleware']) {
   return function <T extends new (...args: any[]) => any>(
@@ -84,7 +106,8 @@ export function middleware(middleware: Middleware['middleware']) {
   ) {
     if (!(target instanceof Route)) {
       throw new Error(
-        'Middleware can only be applied to a class with the route decorator'
+        'Middleware can only be applied to a class with the route decorator.' +
+          '\n\tMake sure to apply the middleware decorator above the route decorator'
       )
     }
     target['middleware'] = middleware
