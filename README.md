@@ -1,8 +1,5 @@
-# **:cloud: Futen 風天 (Heavenly Wind)**
-
-> A (very) lightweight web framework, using decorators, simplifying syntax.
-
----
+<h1 align="center"> ☁️ Futen 風天 (Heavenly Wind) </h1>
+<h2 align="center"> A (very) lightweight web framework, using decorators, simplifying syntax </h2>
 
 ### **Get Started with:**
 
@@ -11,9 +8,6 @@ bun i futen
 
 npm i futen
 ```
----
-
-## **:wrench: Developer usage**
 
 ### Build
 
@@ -23,23 +17,11 @@ bun bake
 
 ---
 
-## **:handshake: Contributing**
+## **🤝 Contributing**
 
 - Fork it!
 - Read the [contributing guidelines](CONTRIBUTING.md)
 - Submit a pull request
-
----
-
-### **:scroll: Release history**
-
-* 0.0.0-prerelease.x
-  * Bug fixing before full release
-  * Improving code
-  * Adding functionality
-  * BREAKING CHANGES!!!
-
----
 
 ### **:robot: Author**
 
