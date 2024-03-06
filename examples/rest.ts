@@ -1,13 +1,16 @@
-import { Server, route } from '../src/router/rest'
+import { HTTPServer } from "../src/servers"
+import { middleware, route } from "../src/router/decorators"
 
+@middleware((request) => {
+  console.log(`Request to ${request.url}`)
+})
 @route('/')
 class Home {
   get() {
     const routes = Object.entries(server.routes).map(([routeClass, route]) => {
       return {
         class: routeClass,
-        path: route.path,
-        methods: route.handlers.map((handler) => handler.name)
+        path: route.path
       }
     })
     return Response.json({
@@ -29,7 +32,7 @@ class Test {
 //   }
 // }
 
-const server = new Server(
+const server = new HTTPServer(
   {
     Home,
     Test

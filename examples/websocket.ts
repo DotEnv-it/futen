@@ -1,5 +1,6 @@
 import { ServerWebSocket } from 'bun'
-import { WebSocketServer, ws } from '../src/router/websocket'
+import { WebSocketServer } from '../src/servers'
+import { ws } from '../src/router/decorators'
 
 @ws('/websocket1')
 class WebSocket1 {
