@@ -12,6 +12,7 @@ tsconfig.json
 .eslintrc.cjs
 .prettierrc
 .vscode
+.github
 .gitignore
 .DS_Store
 node_modules
