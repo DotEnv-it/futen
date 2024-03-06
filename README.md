@@ -4,9 +4,26 @@
 ### **Get Started with:**
 
 ```sh
-bun i futen
+bun init
 
-npm i futen
+bun i futen
+```
+
+```ts
+import { HTTPServer, route } from "futen";
+
+@route("/")
+class Index {
+  get() {
+    return new Response("Hello, World!");
+  }
+}
+
+const server = new HTTPServer({
+  Index
+})
+
+console.log(`Server is running at http://localhost:${server.instance.port}`);
 ```
 
 ### Build
