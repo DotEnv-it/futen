@@ -130,6 +130,21 @@ export function middleware(middleware: Middleware['middleware']) {
           '\n\tMake sure to apply the middleware decorator above the route decorator'
       )
     }
-    target['middleware'] = middleware
+    if (target['middleware'] === undefined) {
+      target['middleware'] = []
+    }
+    if (!(target['middleware'] instanceof Array)) {
+      // How did we get here? Open an issue tyty
+      target['middleware'] = [target['middleware']]
+    }
+    if (middleware === undefined) {
+      throw new Error(
+        'Middleware cannot be undefined, did you forget to pass a middleware function?'
+      )
+    }
+    if (!(middleware instanceof Array)) {
+      middleware = [middleware]
+    }
+    target['middleware'] = target['middleware'].concat(middleware)
   }
 }
