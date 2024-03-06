@@ -1,6 +1,7 @@
 import { HTTPMethod } from '../servers/rest'
 import { WSEvent } from '../servers/websocket'
 import { Route } from './core'
+import { Middleware } from './middleware'
 
 /**
  * The route decorator assigns a path to a class within the server it is applied to.
@@ -69,5 +70,23 @@ export function ws(path: string) {
     _context: ClassDecoratorContext<T>
   ) {
     return new Route(target, path, 'ws') as Route & typeof WSEvent & T
+  }
+}
+
+/**
+ * Decorator to add middleware to a single route
+ */
+export function middleware(middleware: Middleware['middleware']) {
+  return function <T extends new (...args: any[]) => any>(
+    target: T,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Context is a mandatory parameter but is always undefined in this case
+    _context: ClassDecoratorContext<T>
+  ) {
+    if (!(target instanceof Route)) {
+      throw new Error(
+        'Middleware can only be applied to a class with the route decorator'
+      )
+    }
+    target['middleware'] = middleware
   }
 }
