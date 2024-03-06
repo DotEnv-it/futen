@@ -9,7 +9,7 @@ function defaultHTTPHandler() {
  * As described in the HTTP/1.1 specification (RFC 9110)
  * @link https://www.rfc-editor.org/rfc/rfc9110.html
  */
-export const HTTPRoute = {
+export const HTTPMethod = {
   get: defaultHTTPHandler,
   head: defaultHTTPHandler,
   post: defaultHTTPHandler,

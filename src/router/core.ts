@@ -1,7 +1,7 @@
-import { HTTPRoute } from './http'
+import { HTTPMethod } from './http'
 import Router from './router'
 import { ServerOptions, WebSocketServerOptions } from './servers'
-import { WSRoute } from './websocket'
+import { WSEvent } from './websocket'
 
 /**
  * Generic helper function to override methods in a class
@@ -44,10 +44,10 @@ export class Route {
   ) {
     switch (typeOfRoute) {
       case 'http':
-        overrideMethods(this, HTTPRoute, target.prototype)
+        overrideMethods(this, HTTPMethod, target.prototype)
         return this
       case 'ws':
-        overrideMethods(this, WSRoute, target.prototype)
+        overrideMethods(this, WSEvent, target.prototype)
         return this
     }
   }

@@ -1,8 +1,8 @@
 import { Server as BunServer, ServeOptions, WebSocketServeOptions } from 'bun'
 import { Server } from './core'
 import { Middleware, runMiddleware } from './middleware'
-import { HTTPRoute } from './http'
-import { WSRoute, webSocketRouterHandler } from './websocket'
+import { HTTPMethod } from './http'
+import { WSEvent, webSocketRouterHandler } from './websocket'
 
 export type ServerOptions = {
   [key in keyof ServeOptions]?: ServeOptions[key]
@@ -18,7 +18,7 @@ export type ServerOptions = {
  */
 export class HTTPServer<T extends Record<string, unknown>> extends Server<
   T,
-  typeof HTTPRoute
+  typeof HTTPMethod
 > {
   /**
    * The server instance
@@ -37,8 +37,8 @@ export class HTTPServer<T extends Record<string, unknown>> extends Server<
     const routeMap = this.router
     this.instance = Bun.serve({
       async fetch(request) {
-        const method = request.method.toLowerCase() as keyof typeof HTTPRoute
-        if (!HTTPRoute[method]) {
+        const method = request.method.toLowerCase() as keyof typeof HTTPMethod
+        if (!HTTPMethod[method]) {
           return Response.json(
             { error: `Invalid method: ${method}` },
             { status: 405 }
@@ -73,7 +73,7 @@ export type WebSocketServerOptions = {
 
 export class WebSocketServer<T extends Record<string, unknown>> extends Server<
   T,
-  typeof WSRoute
+  typeof WSEvent
 > {
   public instance: BunServer
   constructor(websockets: T, options?: WebSocketServerOptions) {
