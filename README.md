@@ -23,9 +23,10 @@ bun bake
 - Read the [contributing guidelines](CONTRIBUTING.md)
 - Submit a pull request
 
-### **:robot: Author**
-
-_*Brian Ferri*_ ([GitHub](https://github.com/BioCla))
+## Contributors
+<a href = "https://github.com/dotenv-it/futen/contributors">
+  <img src = "https://contributors-img.web.app/image?repo=dotenv-it/futen"/>
+</a>
 
 ---
 
