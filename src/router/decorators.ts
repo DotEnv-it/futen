@@ -1,6 +1,6 @@
+import { HTTPMethod } from '../servers/rest'
+import { WSEvent } from '../servers/websocket'
 import { Route } from './core'
-import { HTTPMethod } from './http'
-import { WSEvent } from './websocket'
 
 /**
  * The route decorator assigns a path to a class within the server it is applied to.

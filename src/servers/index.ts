@@ -1,9 +1,12 @@
 import { Server as BunServer, ServeOptions, WebSocketServeOptions } from 'bun'
-import { Server } from './core'
-import { Middleware, runMiddleware } from './middleware'
-import { HTTPMethod } from './http'
+import { Server } from '../router/core'
+import { Middleware, runMiddleware } from '../router/middleware'
+import { HTTPMethod } from './rest'
 import { WSEvent, webSocketRouterHandler } from './websocket'
 
+/**
+ * Optional porting of the ServeOptions type from Bun
+ */
 export type ServerOptions = {
   [key in keyof ServeOptions]?: ServeOptions[key]
 } & Middleware
@@ -67,6 +70,9 @@ export class HTTPServer<T extends Record<string, unknown>> extends Server<
   }
 }
 
+/**
+ * Optional porting of the WebSocketServeOptions type from Bun
+ */
 export type WebSocketServerOptions = {
   [key in keyof WebSocketServeOptions]?: WebSocketServeOptions[key]
 } & Middleware

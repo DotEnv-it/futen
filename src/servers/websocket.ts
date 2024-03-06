@@ -1,5 +1,5 @@
 import { ServerWebSocket, WebSocketServeOptions } from 'bun'
-import Router from './router.ts'
+import Router from '../router/routing.ts'
 
 /**
  * Standard WebSocket events which are automatically picked up by the router

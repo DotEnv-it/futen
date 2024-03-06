@@ -1,7 +1,7 @@
-import { HTTPMethod } from './http'
-import Router from './router'
-import { ServerOptions, WebSocketServerOptions } from './servers'
-import { WSEvent } from './websocket'
+import Router from './routing'
+import { ServerOptions, WebSocketServerOptions } from '../servers'
+import { HTTPMethod } from '../servers/rest'
+import { WSEvent } from '../servers/websocket'
 
 /**
  * Generic helper function to override methods in a class
