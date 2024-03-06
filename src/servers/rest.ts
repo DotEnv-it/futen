@@ -5,7 +5,9 @@ function defaultHTTPHandler() {
 }
 /**
  * Standard HTTP methods which are automatically picked up by the router
+ *
  * ---
+ *
  * As described in the HTTP/1.1 specification (RFC 9110)
  * @link https://www.rfc-editor.org/rfc/rfc9110.html
  */

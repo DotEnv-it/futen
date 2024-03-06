@@ -56,7 +56,9 @@ export function route(path: string) {
 
 /**
  * Decorator for WebSocket routes
+ *
  * ---
+ *
  * This decorator is used to define WebSocket routes
  * @param path - The path of the route
  */

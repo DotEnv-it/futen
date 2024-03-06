@@ -1,4 +1,5 @@
-import { Server, route } from '../src/router/rest'
+import { HTTPServer } from "../src/servers"
+import { route } from "../src/router/decorators"
 
 @route('/')
 class Home {
@@ -6,8 +7,7 @@ class Home {
     const routes = Object.entries(server.routes).map(([routeClass, route]) => {
       return {
         class: routeClass,
-        path: route.path,
-        methods: route.handlers.map((handler) => handler.name)
+        path: route.path
       }
     })
     return Response.json({
@@ -29,7 +29,7 @@ class Test {
 //   }
 // }
 
-const server = new Server(
+const server = new HTTPServer(
   {
     Home,
     Test
