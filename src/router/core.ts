@@ -1,7 +1,7 @@
-import { HTTPMethod } from './http'
-import Router from './router'
-import { ServerOptions, WebSocketServerOptions } from './servers'
-import { WSEvent } from './websocket'
+import Router from './routing'
+import { ServerOptions, WebSocketServerOptions } from '../servers'
+import { HTTPMethod } from '../servers/rest'
+import { WSEvent } from '../servers/websocket'
 
 /**
  * Generic helper function to override methods in a class
@@ -33,7 +33,9 @@ function overrideMethods<T>(
 
 /**
  * Generic route is used to instantiate both HTTP and WebSocket routes
+ *
  * ---
+ *
  * It will take the target class and add the methods from it which override the default methods
  */
 export class Route {
@@ -55,6 +57,14 @@ export class Route {
 
 export abstract class Server<T extends Record<string, unknown>, K> {
   public routes: Record<keyof T, Route & K>
+  /**
+   * The router of a server is not accessible to avoid accidental modification
+   *
+   * ---
+   *
+   * Create a new Router instance instead
+   * @see Router
+   */
   protected router = new Router()
 
   private addRoute<T>(path: string, route: T) {

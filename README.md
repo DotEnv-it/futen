@@ -14,6 +14,23 @@ import { HTTPServer, route } from "futen";
 
 @route("/")
 class Index {
+  get() {
+    return new Response("Hello, World!");
+  }
+}
+
+const server = new HTTPServer({
+  Index
+})
+
+console.log(`Server is running at http://localhost:${server.instance.port}`);
+```
+
+```ts
+import { HTTPServer, route } from "futen";
+
+@route("/")
+class Index {
   // `get` is a special method keyword for classes on which a futen decorator has been applied to, see below
   get() {
     return new Response("Hello, World!");

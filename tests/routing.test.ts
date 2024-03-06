@@ -1,7 +1,7 @@
 import { describe, test, expect } from 'bun:test'
-import { HTTPServer, route } from '../dist/index.mjs'
+import { HTTPServer, Router, route } from '../dist/index.mjs'
 
-describe('ROUTING', () => {
+describe('REST BASIC ROUTING EXAMPLE', () => {
   @route('/')
   class Home {
     get() {
@@ -79,7 +79,7 @@ class RouteFactory {
   }
 }
 
-describe('PATH STRESS', () => {
+describe('REST RESPONSES', () => {
   const routes = [
     '/',
     '/user',
@@ -256,5 +256,75 @@ describe('PATH STRESS', () => {
         expect(responseBody).toEqual(body)
       })
     }
+  }
+})
+
+describe('SIMPLE ROUTING', () => {
+  const routes = [
+    '/',
+    '/user',
+    '/user/:userID',
+    '/user/:userID/posts',
+    '/static/js/*',
+    '/static/*',
+    '/api/login',
+    '/api/projects',
+    '/api/people',
+    '/api/postings',
+    '/api/postings/details',
+    '/api/postings/details/misc',
+    '/api/postings/details/misc/many',
+    '/api/postings/details/misc/many/nodes',
+    '/api/postings/details/misc/many/nodes/deep',
+    '/api/posts',
+    '/api/posts/:postID',
+    '/api/posts/:postID/comments',
+    '/api/posts/:postID/comments/:commentID',
+    '/medium/length/',
+    '/very/very/long/long/route/route/path',
+    '/v:version/api/login',
+    '/user/v:version/:userID'
+  ]
+
+  const testURLs = {
+    '/': true,
+    '/use': false,
+    '/user': true,
+    '/user/0123456789': true,
+    '/user/0123456789012345678901234567890123456789': true,
+    '/user/0123456789/posts': true,
+    '/static/js/common.js': true,
+    '/static/json/config.json': true,
+    '/static/css/styles.css': true,
+    '/static/': true,
+    '/api/login': true,
+    '/api/postings/details/misc/many/nodes/deep': true,
+    '/api/posts/0123456789': true,
+    '/api/posts/0123456789/comments': true,
+    '/api/posts/0123456789/comments/0123456789': true,
+    '/medium/length/': true,
+    '/very/very/long/long/route/route/path': true,
+    '/404-not-found': false,
+    '/?q': true,
+    '/use?q': false,
+    '/user?q': true,
+    '/user/0123456789?q': true,
+    '/user/0123456789?querystringisreallyreallylong': true,
+    '/static/css/styles.css?q': true,
+    '/404-not-found?q': false,
+    '/v1/api/login': true,
+    '/user/v1/0123456789': true
+  }
+
+  const router = new Router()
+
+  for (const path of routes) {
+    router.register(path)
+  }
+
+  for (const [url, expected] of Object.entries(testURLs)) {
+    test(`should return ${expected ? 'found' : 'not found'} for ${url}`, () => {
+      expect(router.find(url) !== null).toBe(expected)
+    })
   }
 })

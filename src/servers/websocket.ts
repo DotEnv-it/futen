@@ -1,29 +1,26 @@
 import { ServerWebSocket, WebSocketServeOptions } from 'bun'
-import Router from './router.ts'
+import Router from '../router/routing.ts'
 
 /**
  * Standard WebSocket events which are automatically picked up by the router
+ *
  * ---
+ *
  * Compatible with Bun base WebSocket server
  * @link https://bun.sh/docs/api/websockets#reference
  */
 export const WSEvent = {
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   message: (
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _ws: ServerWebSocket,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _message: string | ArrayBuffer | Uint8Array
   ) => {},
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   open: (_ws: ServerWebSocket) => {},
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   close: (_ws: ServerWebSocket, _code: number, _reason: string) => {},
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   drain: (_ws: ServerWebSocket) => {},
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   ping: (_ws: ServerWebSocket, _data: Buffer) => {},
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   pong: (_ws: ServerWebSocket, _data: Buffer) => {}
+  /* eslint-enable @typescript-eslint/no-unused-vars */
 } satisfies WebSocketServeOptions['websocket']
 
 /**
