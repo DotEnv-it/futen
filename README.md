@@ -1,29 +1,24 @@
-# **:triangular_flag_on_post: Futen**
+# **:cloud: Futen 風天 (Heavenly Wind)**
 
 > A (very) lightweight web framework, using decorators, simplifying syntax.
 
 ---
 
-## **:package: Main tools/Languages**
+### **Get Started with:**
 
-- [x] Typescript
-- [x] Bun
-
----
-
-### **Installation**
-
-```bash
+```sh
 bun i futen
+
+npm i futen
 ```
 ---
 
 ## **:wrench: Developer usage**
 
-### Lint, build, run tests
+### Build
 
-```bash
-bun release:dry
+```sh
+bun bake
 ```
 
 ---
@@ -36,18 +31,13 @@ bun release:dry
 
 ---
 
-### **:heart: Show your support**
-
-Please :star: this repository if you like it or this project helped you! Feel free to open issues or submit pull-requests to help me improving my work.
-
----
-
 ### **:scroll: Release history**
 
 * 0.0.0-prerelease.x
   * Bug fixing before full release
   * Improving code
   * Adding functionality
+  * BREAKING CHANGES!!!
 
 ---
 
