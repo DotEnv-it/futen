@@ -121,7 +121,7 @@ export class Futen<T extends Record<string, unknown>> {
    * @param request
    * @param server
    */
-  protected fetch(options?: ServerOptions | WebSocketServerOptions) {
+  private fetch(options?: ServerOptions | WebSocketServerOptions) {
     return async (request: Request, server: BunServer) => {
       const url = new URL(request.url)
       const route = this.router.find<Record<number, GenericRouteType>>(
