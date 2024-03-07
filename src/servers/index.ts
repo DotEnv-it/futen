@@ -2,7 +2,7 @@ import { Server as BunServer, ServeOptions, WebSocketServeOptions } from 'bun'
 import { Server } from '../router/core'
 import { Middleware } from '../router/middleware'
 import { HTTPMethod } from './http'
-import { WSEvent, webSocketRouterHandler } from './websocket'
+import { WSEvent, webSocketRouteWrapper } from './websocket'
 
 /**
  * Optional porting of the ServeOptions type from Bun
@@ -62,7 +62,7 @@ export class WebSocketServer<T extends Record<string, unknown>> extends Server<
     const routeMap = this.router
     this.instance = Bun.serve({
       fetch: this.fetch(options),
-      websocket: webSocketRouterHandler(routeMap),
+      websocket: webSocketRouteWrapper(routeMap),
       ...options
     })
     return this

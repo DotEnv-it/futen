@@ -76,6 +76,9 @@ export function ws(path: string) {
 /**
  * Decorator to add middleware to a single route
  *
+ * Adding multiple decorators is possible, in which case they will be executed in the order they are written.
+ * (i.e. the first decorator will be the first middleware to be executed)
+ *
  * ---
  *
  * Executes arbitrary code before the route is called

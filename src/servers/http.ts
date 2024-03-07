@@ -1,6 +1,9 @@
-import { ServeOptions } from 'bun'
-
-function defaultHTTPHandler() {
+function defaultHTTPHandler(
+  /* eslint-disable @typescript-eslint/no-unused-vars */
+  _request: Request,
+  _params: Record<string, string>
+  /* eslint-enable @typescript-eslint/no-unused-vars */
+) {
   return Response.json({ error: 'Method not implemented' }, { status: 405 })
 }
 /**
@@ -21,4 +24,4 @@ export const HTTPMethod = {
   options: defaultHTTPHandler,
   trace: defaultHTTPHandler,
   patch: defaultHTTPHandler
-} satisfies Record<string, ServeOptions['fetch']>
+}

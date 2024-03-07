@@ -1,7 +1,7 @@
 import Router from './routing'
 import { ServerOptions, WebSocketServerOptions } from '../servers'
 import { HTTPMethod } from '../servers/http'
-import { WSEvent } from '../servers/websocket'
+import { WSEvent, WebSocketDataType } from '../servers/websocket'
 import { Middleware, runMiddleware } from './middleware'
 import { Server as BunServer } from 'bun'
 
@@ -43,7 +43,7 @@ function overrideMethods<T>(
  * It will take the target class and add the methods from it which override the default methods
  */
 export class Route {
-  protected middleware: Middleware['middleware']
+  public middleware: Middleware['middleware']
   constructor(
     public target: Function,
     public path: string,
@@ -65,6 +65,7 @@ export class Route {
     }
   }
 }
+type GenericRouteType = Route & typeof HTTPMethod & typeof WSEvent
 
 export abstract class Server<T extends Record<string, unknown>, K> {
   public routes: Record<keyof T, Route & K>
@@ -123,7 +124,9 @@ export abstract class Server<T extends Record<string, unknown>, K> {
   protected fetch(options?: ServerOptions | WebSocketServerOptions) {
     return async (request: Request, server: BunServer) => {
       const url = new URL(request.url)
-      const route = this.router.find(url.pathname)
+      const route = this.router.find<Record<number, GenericRouteType>>(
+        url.pathname
+      )
       if (route === null) {
         return new Response(`Route not found for ${request.url}`, {
           status: 404
@@ -141,14 +144,19 @@ export abstract class Server<T extends Record<string, unknown>, K> {
       if (this.type === 'ws') {
         if (
           !server.upgrade(request, {
-            data: { route: routeStore.path, params: route.params }
+            data: {
+              route: routeStore.path,
+              params: route.params
+            } satisfies WebSocketDataType
           })
         ) {
           return new Response('Upgrade failed!', { status: 500 })
         }
         return new Response(null, { status: 101 })
       }
-      return routeStore[request.method.toLowerCase()](request, route.params)
+      return routeStore[
+        request.method.toLowerCase() as keyof typeof HTTPMethod
+      ](request, route.params)
     }
   }
 }

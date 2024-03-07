@@ -186,7 +186,7 @@ export default class Router {
     return node.store
   }
 
-  find(url: string): { store: any; params: Record<string, string> } | null {
+  find<T>(url: string) {
     if (url === '' || url[0] !== '/') {
       return null
     }
@@ -194,7 +194,7 @@ export default class Router {
     const queryIndex = url.indexOf('?')
     const urlLength = queryIndex >= 0 ? queryIndex : url.length
 
-    return matchRoute(url, urlLength, this._root, 0)
+    return matchRoute<T>(url, urlLength, this._root, 0)
   }
 }
 
@@ -235,12 +235,12 @@ function defaultStoreFactory(): any {
   return Object.create(null)
 }
 
-function matchRoute(
+function matchRoute<T = any>(
   url: string,
   urlLength: number,
   node: Node,
   startIndex: number
-): { store: any; params: Record<string, string> } | null {
+): { store: T; params: Record<string, string> } | null {
   const { pathPart } = node
   const pathPartLen = pathPart.length
   const pathPartEndIndex = startIndex + pathPartLen
