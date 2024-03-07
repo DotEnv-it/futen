@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'bun:test'
-import { HTTPServer, route, middleware } from '../dist/index.mjs'
+import Futen, { route, middleware } from '../dist/index.mjs'
 
 describe('MIDDLEWARE', () => {
   test('runs middleware on server scope', async () => {
@@ -10,7 +10,7 @@ describe('MIDDLEWARE', () => {
       }
     }
 
-    const server = new HTTPServer(
+    const server = new Futen(
       { Index },
       {
         middleware: (request) => {
@@ -44,7 +44,7 @@ describe('MIDDLEWARE', () => {
       }
     }
 
-    const server = new HTTPServer({ Index }, { port: 0 })
+    const server = new Futen({ Index }, { port: 0 })
 
     const response = await server.instance.fetch(
       new Request(`http://localhost:${server.instance.port}/`)
@@ -72,7 +72,7 @@ describe('MIDDLEWARE', () => {
       }
     }
 
-    const server = new HTTPServer({ Index }, { port: 0 })
+    const server = new Futen({ Index }, { port: 0 })
 
     const body = await server.instance.fetch(
       new Request(`http://localhost:${server.instance.port}/`)

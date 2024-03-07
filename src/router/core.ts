@@ -1,7 +1,11 @@
 import Router from './routing'
 import { ServerOptions, WebSocketServerOptions } from '../servers'
 import { HTTPMethod } from '../servers/http'
-import { WSEvent, WebSocketDataType } from '../servers/websocket'
+import {
+  WSEvent,
+  WebSocketDataType,
+  webSocketRouteWrapper
+} from '../servers/websocket'
 import { Middleware, runMiddleware } from './middleware'
 import { Server as BunServer } from 'bun'
 
@@ -67,8 +71,8 @@ export class Route {
 }
 type GenericRouteType = Route & typeof HTTPMethod & typeof WSEvent
 
-export abstract class Server<T extends Record<string, unknown>, K> {
-  public routes: Record<keyof T, Route & K>
+export class Futen<T extends Record<string, unknown>> {
+  public routes: Record<keyof T, Route>
   /**
    * The router of a server is not accessible to avoid accidental modification
    *
@@ -78,31 +82,23 @@ export abstract class Server<T extends Record<string, unknown>, K> {
    * @see Router
    */
   protected router = new Router()
+  public instance: BunServer
 
   private addRoute<T>(path: string, route: T) {
     const store = this.router.register<Record<number, T>>(path)
     store[0] = route
   }
 
-  constructor(
-    readonly type: RouteType,
-    routes: T,
-    options?: ServerOptions | WebSocketServerOptions
-  ) {
+  constructor(routes: T, options?: ServerOptions | WebSocketServerOptions) {
     for (const route of Object.values(routes)) {
       if (!(route instanceof Route)) {
         throw new Error(
           `Did you forget to apply the decorator?\nInvalid route class: \n${route}`
         )
       }
-      if (route.typeOfRoute !== type) {
-        throw new Error(
-          `Invalid route type: ${route.typeOfRoute}. Expected: ${type}`
-        )
-      }
       this.addRoute(route.path, route)
     }
-    this.routes = routes as Record<keyof T, Route & K>
+    this.routes = routes as Record<keyof T, Route>
     if (
       options?.fetch !== undefined &&
       process.env['OVERWRITE_FETCH'] !== 'true'
@@ -113,6 +109,12 @@ export abstract class Server<T extends Record<string, unknown>, K> {
       )
       delete options.fetch
     }
+    const routeMap = this.router
+    this.instance = Bun.serve({
+      fetch: this.fetch(options),
+      websocket: webSocketRouteWrapper(routeMap),
+      ...options
+    })
     return this
   }
 
@@ -141,7 +143,7 @@ export abstract class Server<T extends Record<string, unknown>, K> {
         )
         request = middlewareResponse ?? request
       }
-      if (this.type === 'ws') {
+      if (request.headers.get('upgrade') === 'websocket') {
         if (
           !server.upgrade(request, {
             data: {

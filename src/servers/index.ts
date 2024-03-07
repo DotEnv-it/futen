@@ -1,8 +1,7 @@
 import { Server as BunServer, ServeOptions, WebSocketServeOptions } from 'bun'
-import { Server } from '../router/core'
+import { Futen } from '../router/core'
 import { Middleware } from '../router/middleware'
-import { HTTPMethod } from './http'
-import { WSEvent, webSocketRouteWrapper } from './websocket'
+import { webSocketRouteWrapper } from './websocket'
 
 /**
  * Optional porting of the ServeOptions type from Bun
@@ -19,9 +18,8 @@ export type ServerOptions = {
  *
  * @see BunServer
  */
-export class HTTPServer<T extends Record<string, unknown>> extends Server<
-  T,
-  typeof HTTPMethod
+export class HTTPServer<T extends Record<string, unknown>> extends Futen<
+  T
 > {
   /**
    * The server instance
@@ -36,7 +34,7 @@ export class HTTPServer<T extends Record<string, unknown>> extends Server<
     routes: T,
     public options?: ServerOptions
   ) {
-    super('http', routes, options)
+    super(routes, options)
     this.instance = Bun.serve({
       fetch: this.fetch(options),
       ...options
@@ -52,13 +50,12 @@ export type WebSocketServerOptions = {
   [key in keyof WebSocketServeOptions]?: WebSocketServeOptions[key]
 } & Middleware
 
-export class WebSocketServer<T extends Record<string, unknown>> extends Server<
-  T,
-  typeof WSEvent
+export class WebSocketServer<T extends Record<string, unknown>> extends Futen<
+  T
 > {
   public instance: BunServer
   constructor(websockets: T, options?: WebSocketServerOptions) {
-    super('ws', websockets, options)
+    super(websockets, options)
     const routeMap = this.router
     this.instance = Bun.serve({
       fetch: this.fetch(options),

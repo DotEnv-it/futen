@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'bun:test'
-import { HTTPServer, Router, route } from '../dist/index.mjs'
+import Futen, { Router, route } from '../dist/index.mjs'
 
 describe('REST BASIC ROUTING EXAMPLE', () => {
   @route('/')
@@ -23,7 +23,7 @@ describe('REST BASIC ROUTING EXAMPLE', () => {
     }
   }
 
-  const server = new HTTPServer(
+  const server = new Futen(
     {
       Home,
       Test,
@@ -230,7 +230,7 @@ describe('REST RESPONSES', () => {
     Routes[path] = RouteFactory.create(path)
   }
 
-  const server = new HTTPServer(Routes, {
+  const server = new Futen(Routes, {
     port: 0
   })
 

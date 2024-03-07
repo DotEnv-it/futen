@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'bun:test'
 import { ServerWebSocket } from 'bun'
-import { ws, WebSocketServer } from '../dist/index.mjs'
+import Futen, { ws } from '../dist/index.mjs'
 
 describe('WebSocket', () => {
   @ws('/websocket1')
@@ -56,7 +56,7 @@ describe('WebSocket', () => {
     }
   }
 
-  const wsServer = new WebSocketServer(
+  const wsServer = new Futen(
     {
       WebSocket1,
       WebSocket2

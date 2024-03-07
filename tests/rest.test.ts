@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'bun:test'
-import { HTTPServer, route } from '../dist/index.mjs'
+import Futen, { route } from '../dist/index.mjs'
 
 describe('REST', () => {
   @route('/')
@@ -26,7 +26,7 @@ describe('REST', () => {
     }
   }
 
-  const server = new HTTPServer(
+  const server = new Futen(
     {
       Home,
       Test
