@@ -54,7 +54,7 @@ export class Route {
     if (typeof target !== 'function') {
       throw new Error(
         'Invalid target, expected a class. ' +
-        'Make sure to apply the decorator to a class, not to a method or property.'
+          'Make sure to apply the decorator to a class, not to a method or property.'
       )
     }
     switch (typeOfRoute) {
@@ -103,7 +103,7 @@ export class Futen<T extends Record<string, unknown>> {
     ) {
       console.warn(
         'You are overwriting the fetch method. This may cause unexpected behavior. ' +
-        '\n\tIf you are sure you want to do this, set the OVERWRITE_FETCH environment variable to `true`'
+          '\n\tIf you are sure you want to do this, set the OVERWRITE_FETCH environment variable to `true`'
       )
       delete options.fetch
     }
