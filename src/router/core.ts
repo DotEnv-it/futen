@@ -1,15 +1,13 @@
 import Router from './routing'
-import { ServerOptions, WebSocketServerOptions } from '../servers'
-import { HTTPMethod } from '../servers/http'
+import { HTTPMethod, ServerOptions } from '../servers/http'
 import {
   WSEvent,
   WebSocketDataType,
+  WebSocketServerOptions,
   webSocketRouteWrapper
 } from '../servers/websocket'
 import { Middleware, runMiddleware } from './middleware'
 import { Server as BunServer } from 'bun'
-
-type RouteType = 'http' | 'ws'
 
 /**
  * Generic helper function to override methods in a class
@@ -51,12 +49,12 @@ export class Route {
   constructor(
     public target: Function,
     public path: string,
-    public typeOfRoute: RouteType
+    public typeOfRoute: 'http' | 'ws'
   ) {
     if (typeof target !== 'function') {
       throw new Error(
         'Invalid target, expected a class. ' +
-          'Make sure to apply the decorator to a class, not to a method or property.'
+        'Make sure to apply the decorator to a class, not to a method or property.'
       )
     }
     switch (typeOfRoute) {
@@ -72,7 +70,7 @@ export class Route {
 type GenericRouteType = Route & typeof HTTPMethod & typeof WSEvent
 
 export class Futen<T extends Record<string, unknown>> {
-  public routes: Record<keyof T, Route>
+  public routes: Record<keyof T, GenericRouteType>
   /**
    * The router of a server is not accessible to avoid accidental modification
    *
@@ -81,7 +79,7 @@ export class Futen<T extends Record<string, unknown>> {
    * Create a new Router instance instead
    * @see Router
    */
-  protected router = new Router()
+  private router = new Router()
   public instance: BunServer
 
   private addRoute<T>(path: string, route: T) {
@@ -98,14 +96,14 @@ export class Futen<T extends Record<string, unknown>> {
       }
       this.addRoute(route.path, route)
     }
-    this.routes = routes as Record<keyof T, Route>
+    this.routes = routes as Record<keyof T, GenericRouteType>
     if (
       options?.fetch !== undefined &&
       process.env['OVERWRITE_FETCH'] !== 'true'
     ) {
       console.warn(
         'You are overwriting the fetch method. This may cause unexpected behavior. ' +
-          '\n\tIf you are sure you want to do this, set the OVERWRITE_FETCH environment variable to `true`'
+        '\n\tIf you are sure you want to do this, set the OVERWRITE_FETCH environment variable to `true`'
       )
       delete options.fetch
     }

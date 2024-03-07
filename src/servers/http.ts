@@ -1,3 +1,13 @@
+import { ServeOptions } from 'bun'
+import { Middleware } from '../router/middleware'
+
+/**
+ * Optional porting of the ServeOptions type from Bun
+ */
+export type ServerOptions = {
+  [key in keyof ServeOptions]?: ServeOptions[key]
+} & Middleware
+
 function defaultHTTPHandler(
   /* eslint-disable @typescript-eslint/no-unused-vars */
   _request: Request,

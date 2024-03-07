@@ -1,5 +1,13 @@
 import { ServerWebSocket, WebSocketServeOptions } from 'bun'
 import Router from '../router/routing.ts'
+import { Middleware } from '../router/middleware.ts'
+
+/**
+ * Optional porting of the WebSocketServeOptions type from Bun
+ */
+export type WebSocketServerOptions = {
+  [key in keyof WebSocketServeOptions]?: WebSocketServeOptions[key]
+} & Middleware
 
 export type WebSocketDataType = {
   route: string
