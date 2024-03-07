@@ -12,8 +12,8 @@
   "devDependencies": {
     "@types/benchmark": "^2.1.5",
     "@types/bun": "latest",
-    "@typescript-eslint/eslint-plugin": "^7.1.0",
-    "@typescript-eslint/parser": "^7.1.0",
+    "@typescript-eslint/eslint-plugin": "^7.1.1",
+    "@typescript-eslint/parser": "^7.1.1",
     "benchmark": "^2.1.4",
     "eslint": "^8.57.0",
     "eslint-config-standard": "^17.1.0",
