@@ -18,9 +18,7 @@ export type ServerOptions = {
  *
  * @see BunServer
  */
-export class HTTPServer<T extends Record<string, unknown>> extends Futen<
-  T
-> {
+export class HTTPServer<T extends Record<string, unknown>> extends Futen<T> {
   /**
    * The server instance
    */
@@ -50,9 +48,9 @@ export type WebSocketServerOptions = {
   [key in keyof WebSocketServeOptions]?: WebSocketServeOptions[key]
 } & Middleware
 
-export class WebSocketServer<T extends Record<string, unknown>> extends Futen<
-  T
-> {
+export class WebSocketServer<
+  T extends Record<string, unknown>
+> extends Futen<T> {
   public instance: BunServer
   constructor(websockets: T, options?: WebSocketServerOptions) {
     super(websockets, options)
