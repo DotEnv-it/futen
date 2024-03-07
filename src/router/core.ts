@@ -115,29 +115,6 @@ export abstract class Server<T extends Record<string, unknown>, K> {
     return this
   }
 
-  executeMiddlewareStack(
-    request: Request,
-    serverMiddleware?: Middleware,
-    routeMiddleware?: Middleware['middleware']
-  ) {
-    let middlewareResponse = runMiddleware(
-      request,
-      serverMiddleware?.middleware,
-      serverMiddleware?.middlewarePaths
-    )
-    if (routeMiddleware !== undefined) {
-      if (!(routeMiddleware instanceof Array)) {
-        routeMiddleware = [routeMiddleware]
-      }
-      let __request = middlewareResponse ?? request
-      for (let i = routeMiddleware.length - 1; i >= 0; i--) {
-        __request = routeMiddleware[i](__request) ?? __request
-      }
-      middlewareResponse = __request
-    }
-    return middlewareResponse
-  }
-
   /**
    * Fetch method for the server
    * @param request
@@ -154,7 +131,7 @@ export abstract class Server<T extends Record<string, unknown>, K> {
       }
       const routeStore = route.store[0]
       if (routeStore.middleware || options?.middleware) {
-        const middlewareResponse = this.executeMiddlewareStack(
+        const middlewareResponse = runMiddleware(
           request,
           options,
           routeStore.middleware

@@ -145,6 +145,6 @@ export function middleware(middleware: Middleware['middleware']) {
     if (!(middleware instanceof Array)) {
       middleware = [middleware]
     }
-    target['middleware'] = target['middleware'].concat(middleware)
+    target['middleware'] = middleware.concat(target['middleware'])
   }
 }

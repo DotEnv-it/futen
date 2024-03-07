@@ -49,22 +49,49 @@ export type Middleware = {
   middlewarePaths?: string | string[]
 }
 
-export function runMiddleware(
+function applyMiddleware(
+  request: Request,
+  middleware: Middleware['middleware']
+) {
+  if (middleware === undefined) return request
+  if (!(middleware instanceof Array)) middleware = [middleware]
+  let __request = request
+  for (let i = 0; i < middleware.length; i++) {
+    __request = middleware[i](__request) ?? __request
+  }
+  return __request
+}
+
+export function runServerMiddleware(
   request: Request,
   middleware?: Middleware['middleware'],
   middlewarePaths: Middleware['middlewarePaths'] = ['*']
 ) {
   if (middleware === undefined) return
-  if (!(middleware instanceof Array)) middleware = [middleware]
   if (typeof middlewarePaths === 'string') middlewarePaths = [middlewarePaths]
   const path = new URL(request.url).pathname
   for (let i = 0; i < middlewarePaths.length; i++) {
     if (wildcardMatchRegExp(path, middlewarePaths[i])) {
-      let __request = request
-      for (let i = 0; i < middleware.length; i++) {
-        __request = middleware[i](__request) ?? __request
-      }
-      return __request
+      return applyMiddleware(request, middleware)
     }
   }
+}
+
+export function runMiddleware(
+  request: Request,
+  serverMiddleware?: Middleware,
+  routeMiddleware?: Middleware['middleware']
+) {
+  let middlewareResponse =
+    runServerMiddleware(
+      request,
+      serverMiddleware?.middleware,
+      serverMiddleware?.middlewarePaths
+    ) ?? request
+  if (routeMiddleware !== undefined) {
+    for (let i = 0; i < routeMiddleware.length; i++) {
+      middlewareResponse = applyMiddleware(middlewareResponse, routeMiddleware)
+    }
+  }
+  return middlewareResponse
 }
