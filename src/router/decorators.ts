@@ -1,4 +1,4 @@
-import { HTTPMethod } from '../servers/rest'
+import { HTTPMethod } from '../servers/http'
 import { WSEvent } from '../servers/websocket'
 import { Route } from './core'
 import { Middleware } from './middleware'

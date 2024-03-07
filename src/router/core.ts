@@ -1,6 +1,6 @@
 import Router from './routing'
 import { ServerOptions, WebSocketServerOptions } from '../servers'
-import { HTTPMethod } from '../servers/rest'
+import { HTTPMethod } from '../servers/http'
 import { WSEvent } from '../servers/websocket'
 import { Middleware, runMiddleware } from './middleware'
 import { Server as BunServer } from 'bun'
@@ -129,13 +129,13 @@ export abstract class Server<T extends Record<string, unknown>, K> {
       if (!(routeMiddleware instanceof Array)) {
         routeMiddleware = [routeMiddleware]
       }
-      let __request = middlewareResponse || request
-      for (let i = 0; i < routeMiddleware.length; i++) {
-        __request = routeMiddleware[i](__request) || __request
+      let __request = middlewareResponse ?? request
+      for (let i = routeMiddleware.length - 1; i >= 0; i--) {
+        __request = routeMiddleware[i](__request) ?? __request
       }
       middlewareResponse = __request
     }
-    return middlewareResponse || request
+    return middlewareResponse
   }
 
   /**
@@ -159,7 +159,7 @@ export abstract class Server<T extends Record<string, unknown>, K> {
           options,
           routeStore.middleware
         )
-        request = middlewareResponse
+        request = middlewareResponse ?? request
       }
       if (this.type === 'ws') {
         if (

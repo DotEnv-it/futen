@@ -62,7 +62,7 @@ export function runMiddleware(
     if (wildcardMatchRegExp(path, middlewarePaths[i])) {
       let __request = request
       for (let i = 0; i < middleware.length; i++) {
-        __request = middleware[i](__request) || __request
+        __request = middleware[i](__request) ?? __request
       }
       return __request
     }

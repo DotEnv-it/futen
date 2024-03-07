@@ -1,7 +1,7 @@
 import { Server as BunServer, ServeOptions, WebSocketServeOptions } from 'bun'
 import { Server } from '../router/core'
 import { Middleware } from '../router/middleware'
-import { HTTPMethod } from './rest'
+import { HTTPMethod } from './http'
 import { WSEvent, webSocketRouterHandler } from './websocket'
 
 /**

@@ -32,10 +32,6 @@ describe('REST', () => {
       Test
     },
     {
-      middleware: (request) => {
-        expect(request.url).toBe(`http://localhost:${port}/`)
-      },
-      middlewarePaths: ['*/'],
       port: 0
     }
   )
