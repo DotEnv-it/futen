@@ -72,9 +72,7 @@ describe('MIDDLEWARE', () => {
       }
     }
 
-    const server = new HTTPServer(
-      { Index }, { port: 0 }
-    )
+    const server = new HTTPServer({ Index }, { port: 0 })
 
     const body = await server.instance.fetch(
       new Request(`http://localhost:${server.instance.port}/`)
