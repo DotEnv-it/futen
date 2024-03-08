@@ -1,4 +1,4 @@
-import { HTTPServer } from "../src/servers"
+import { Futen } from "../src/router/core"
 import { middleware, route } from "../src/router/decorators"
 
 @middleware([(request) => {
@@ -15,6 +15,7 @@ class Home {
         path: route.path
       }
     })
+    const thisClassAsARoute = server.routes.Home
     return Response.json({
       routes
     })
@@ -43,7 +44,7 @@ class Test {
 //   }
 // }
 
-const server = new HTTPServer(
+const server = new Futen(
   {
     Home,
     Test

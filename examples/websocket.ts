@@ -1,6 +1,6 @@
 import { ServerWebSocket } from 'bun'
-import { WebSocketServer } from '../src/servers'
 import { ws } from '../src/router/decorators'
+import { Futen } from '../src/router/core'
 
 @ws('/websocket1')
 class WebSocket1 {
@@ -47,7 +47,7 @@ class WebSocket2 {
   }
 }
 
-const wsServer = new WebSocketServer(
+const wsServer = new Futen(
   {
     WebSocket1,
     WebSocket2
