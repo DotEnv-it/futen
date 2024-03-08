@@ -1,6 +1,7 @@
 import { describe, test, expect } from 'bun:test'
 import { ServerWebSocket } from 'bun'
 import { ws, WebSocketServer } from '../dist/index.mjs'
+import type { WebSocketDataType } from '../dist/servers/websocket.d.mts'
 
 describe('WebSocket', () => {
   @ws('/websocket1')
@@ -21,7 +22,7 @@ describe('WebSocket', () => {
   @ws('/websocket2/:id/:id2')
   class WebSocket2 {
     message(
-      ws: ServerWebSocket,
+      ws: ServerWebSocket<WebSocketDataType>,
       message: string,
       params: { id: string; id2: string }
     ) {
