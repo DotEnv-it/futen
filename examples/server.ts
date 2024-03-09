@@ -6,22 +6,20 @@ import { WebSocketDataType } from "../src/servers/websocket";
 @route('/')
 class IndexController {
     get(req: Request) {
-        server.routes.IndexController
         return Response.json({ message: req.url });
     }
 }
 
 // This allows to maintain the correct type for the route class being returned by the decorator
-const WS = ws('/ws')(class {
+const WSController = ws('/ws')(class {
     message(ws: ServerWebSocket<WebSocketDataType>, message: string) {
-        server.routes.WS
         return ws.send(message);
     }
 })
 
 const server = new Futen({
     IndexController,
-    WS
+    WSController
 }, {
     port: 3001
 });
