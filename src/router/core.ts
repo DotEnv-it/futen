@@ -73,7 +73,7 @@ type GenericRouteType<T extends typeof HTTPMethod | typeof WSEvent = any> = {
 }
 
 export class Futen<T extends Record<string, GenericRouteType>> {
-  public routes: T & Route
+  public routes: { [key in keyof T]: Route } & T
   /**
    * The router of a server is not accessible to avoid accidental modification
    *
@@ -99,7 +99,7 @@ export class Futen<T extends Record<string, GenericRouteType>> {
       }
       this.addRoute(route.path, route)
     }
-    this.routes = routes as T & Route
+    this.routes = routes as { [key in keyof T]: Route } & T
     if (
       options?.fetch !== undefined &&
       process.env['OVERWRITE_FETCH'] !== 'true'
