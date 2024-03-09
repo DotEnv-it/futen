@@ -43,7 +43,7 @@ export const WSEvent = {
 
 export type WSEvents = typeof WSEvent
 
-type WebSocketKey = keyof WSEvents
+type WebSocketEventKey = keyof WSEvents
 
 type FutenWebSocketEventInterfaceType = {
   [key in keyof typeof WSEvent]?: WSEvents[key]
@@ -51,7 +51,7 @@ type FutenWebSocketEventInterfaceType = {
 export interface FutenWebSocket extends FutenWebSocketEventInterfaceType {}
 export type FutenWebSocketRouteType<T> = Route & WSEvents & T
 
-type WebSocketEventParameterType<T extends WebSocketKey> = Parameters<
+type WebSocketEventParameterType<T extends WebSocketEventKey> = Parameters<
   WSEvents[T]
 >
 
@@ -61,16 +61,15 @@ type WebSocketEventParameterType<T extends WebSocketKey> = Parameters<
  * @returns Wrapper on the WSEvent object to handle WebSocket events
  */
 export function webSocketRouteWrapper(routes: Router) {
-  const router = {} as WSEvents
+  const router = {} as Record<WebSocketEventKey, Function>
   for (const event in WSEvent) {
-    // @ts-expect-error - This is a valid use case
-    router[event as WebSocketKey] = function <T extends WebSocketKey>(
+    router[event as WebSocketEventKey] = function <T extends WebSocketEventKey>(
       ws: ServerWebSocket<WebSocketDataType>,
       ...eventParameters: WebSocketEventParameterType<T>
     ) {
       const route = routes.find<Record<number, WSEvents>>(ws.data.route)
       if (route === null) return
-      return route.store[0][event as WebSocketKey](
+      return route.store[0][event as WebSocketEventKey](
         ws,
         // @ts-expect-error - This is a valid use case
         ...eventParameters,
@@ -78,5 +77,5 @@ export function webSocketRouteWrapper(routes: Router) {
       )
     }
   }
-  return router
+  return router as WSEvents
 }
