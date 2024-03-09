@@ -49,9 +49,9 @@ export function route(path: string) {
   return function <T extends new (...args: any[]) => any>(
     target: T,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Context is a mandatory parameter but is always undefined in this case
-    _context: ClassDecoratorContext<T>
+    _context?: ClassDecoratorContext<T>
   ) {
-    return new Route(target, path, 'http') as Route & typeof HTTPMethod & T
+    return new Route(target, path, 'http') as typeof HTTPMethod & T & Route
   }
 }
 
@@ -67,9 +67,9 @@ export function ws(path: string) {
   return function <T extends new (...args: any[]) => any>(
     target: T,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Context is a mandatory parameter but is always undefined in this case
-    _context: ClassDecoratorContext<T>
+    _context?: ClassDecoratorContext<T>
   ) {
-    return new Route(target, path, 'ws') as Route & typeof WSEvent & T
+    return new Route(target, path, 'ws') as typeof WSEvent & T & Route
   }
 }
 

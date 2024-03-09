@@ -11,18 +11,17 @@ class IndexController {
     }
 }
 
-@ws('/ws')
-class WsController {
+// This allows to maintain the correct type for the route class being returned by the decorator
+const WS = ws('/ws')(class {
     message(ws: ServerWebSocket<WebSocketDataType>, message: string) {
-        server.routes.WsController
+        server.routes.WS
         return ws.send(message);
-
     }
-}
+})
 
 const server = new Futen({
     IndexController,
-    WsController
+    WS
 }, {
     port: 3001
 });

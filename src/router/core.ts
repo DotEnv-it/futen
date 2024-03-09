@@ -67,10 +67,12 @@ export class Route {
     }
   }
 }
-type GenericRouteType = Route & typeof HTTPMethod & typeof WSEvent
+type GenericRouteType<T extends typeof HTTPMethod | typeof WSEvent = any> = {
+  [key in keyof T]: T[key]
+}
 
-export class Futen<T extends Record<string, unknown>> {
-  public routes: Record<keyof T, GenericRouteType>
+export class Futen<T extends Record<string, GenericRouteType>> {
+  public routes: T
   /**
    * The router of a server is not accessible to avoid accidental modification
    *
@@ -96,7 +98,7 @@ export class Futen<T extends Record<string, unknown>> {
       }
       this.addRoute(route.path, route)
     }
-    this.routes = routes as Record<keyof T, GenericRouteType>
+    this.routes = routes
     if (
       options?.fetch !== undefined &&
       process.env['OVERWRITE_FETCH'] !== 'true'
@@ -133,11 +135,11 @@ export class Futen<T extends Record<string, unknown>> {
         })
       }
       const routeStore = route.store[0]
-      if (routeStore.middleware || options?.middleware) {
+      if (routeStore['middleware'] || options?.middleware) {
         const middlewareResponse = runMiddleware(
           request,
           options,
-          routeStore.middleware
+          routeStore['middleware']
         )
         request = middlewareResponse ?? request
       }
@@ -145,7 +147,7 @@ export class Futen<T extends Record<string, unknown>> {
         if (
           !server.upgrade(request, {
             data: {
-              route: routeStore.path,
+              route: routeStore['path'],
               params: route.params
             } satisfies WebSocketDataType
           })
