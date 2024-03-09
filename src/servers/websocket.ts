@@ -1,6 +1,7 @@
 import { ServerWebSocket, WebSocketServeOptions } from 'bun'
 import Router from '../router/routing.ts'
 import { Middleware } from '../router/middleware.ts'
+import { Route } from '../router/core.ts'
 
 /**
  * Optional porting of the WebSocketServeOptions type from Bun
@@ -48,6 +49,7 @@ type FutenWebSocketEventInterfaceType = {
   [key in keyof typeof WSEvent]?: WSEvents[key]
 }
 export interface FutenWebSocket extends FutenWebSocketEventInterfaceType {}
+export type FutenWebSocketRouteType<T> = Route & WSEvents & T
 
 type WebSocketEventParameterType<T extends WebSocketKey> = Parameters<
   WSEvents[T]

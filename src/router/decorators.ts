@@ -1,5 +1,5 @@
-import { type HTTPMethods } from '../servers/http.ts'
-import { type WSEvents } from '../servers/websocket.ts'
+import { type FutenHTTPRouteType } from '../servers/http.ts'
+import { type FutenWebSocketRouteType } from '../servers/websocket.ts'
 import { Route } from './core.ts'
 import { type Middleware } from './middleware.ts'
 
@@ -51,7 +51,7 @@ export function route(path: string) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Context is a mandatory parameter but is always undefined in this case
     _context?: ClassDecoratorContext<T>
   ) {
-    return new Route(target, path, 'http') as HTTPMethods & Route & T
+    return new Route(target, path, 'http') as FutenHTTPRouteType<T>
   }
 }
 
@@ -69,7 +69,7 @@ export function ws(path: string) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Context is a mandatory parameter but is always undefined in this case
     _context?: ClassDecoratorContext<T>
   ) {
-    return new Route(target, path, 'ws') as WSEvents & Route & T
+    return new Route(target, path, 'ws') as FutenWebSocketRouteType<T>
   }
 }
 

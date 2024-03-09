@@ -1,5 +1,6 @@
 import { ServeOptions } from 'bun'
 import { Middleware } from '../router/middleware.ts'
+import { Route } from '../router/core.ts'
 
 /**
  * Optional porting of the ServeOptions type from Bun
@@ -42,3 +43,4 @@ type FutenHTTPMethodInterfaceType = {
   [key in keyof typeof HTTPMethod]?: HTTPMethods[key]
 }
 export interface FutenHTTPRoute extends FutenHTTPMethodInterfaceType {}
+export type FutenHTTPRouteType<T> = Route & HTTPMethods & T

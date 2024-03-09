@@ -50,11 +50,11 @@ function overrideMethods<T>(
  * It will take the target class and add the methods from it which override the default methods
  */
 export class Route {
-  public middleware: Middleware['middleware']
+  public middleware?: Middleware['middleware']
   constructor(
-    public target: Function,
-    public path: string,
-    public typeOfRoute: 'http' | 'ws'
+    readonly target: Function,
+    readonly path: string,
+    readonly typeOfRoute: 'http' | 'ws'
   ) {
     if (typeof target !== 'function') {
       throw new Error(
