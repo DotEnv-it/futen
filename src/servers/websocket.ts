@@ -27,16 +27,16 @@ export const WSEvent = {
   message: (
     _ws: ServerWebSocket<WebSocketDataType>,
     _message: string | ArrayBuffer | Uint8Array
-  ) => { },
-  open: (_ws: ServerWebSocket<WebSocketDataType>) => { },
+  ) => {},
+  open: (_ws: ServerWebSocket<WebSocketDataType>) => {},
   close: (
     _ws: ServerWebSocket<WebSocketDataType>,
     _code: number,
     _reason: string
-  ) => { },
-  drain: (_ws: ServerWebSocket<WebSocketDataType>) => { },
-  ping: (_ws: ServerWebSocket<WebSocketDataType>, _data: Buffer) => { },
-  pong: (_ws: ServerWebSocket<WebSocketDataType>, _data: Buffer) => { }
+  ) => {},
+  drain: (_ws: ServerWebSocket<WebSocketDataType>) => {},
+  ping: (_ws: ServerWebSocket<WebSocketDataType>, _data: Buffer) => {},
+  pong: (_ws: ServerWebSocket<WebSocketDataType>, _data: Buffer) => {}
   /* eslint-enable @typescript-eslint/no-unused-vars */
 } satisfies WebSocketServeOptions<WebSocketDataType>['websocket']
 
@@ -47,7 +47,7 @@ type WebSocketKey = keyof WSEvents
 type FutenWebSocketEventInterfaceType = {
   [key in keyof typeof WSEvent]?: WSEvents[key]
 }
-export interface FutenWebSocket extends FutenWebSocketEventInterfaceType { }
+export interface FutenWebSocket extends FutenWebSocketEventInterfaceType {}
 
 type WebSocketEventParameterType<T extends WebSocketKey> = Parameters<
   WSEvents[T]

@@ -41,4 +41,4 @@ export type HTTPMethods = typeof HTTPMethod
 type FutenHTTPMethodInterfaceType = {
   [key in keyof typeof HTTPMethod]?: HTTPMethods[key]
 }
-export interface FutenHTTPRoute extends FutenHTTPMethodInterfaceType { }
+export interface FutenHTTPRoute extends FutenHTTPMethodInterfaceType {}
