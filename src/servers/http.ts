@@ -1,5 +1,5 @@
 import { ServeOptions } from 'bun'
-import { Middleware } from '../router/middleware'
+import { Middleware } from '../router/middleware.ts'
 
 /**
  * Optional porting of the ServeOptions type from Bun
@@ -35,3 +35,5 @@ export const HTTPMethod = {
   trace: defaultHTTPHandler,
   patch: defaultHTTPHandler
 }
+
+export type HTTPMethods = typeof HTTPMethod

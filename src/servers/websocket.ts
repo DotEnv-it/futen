@@ -40,9 +40,11 @@ export const WSEvent = {
   /* eslint-enable @typescript-eslint/no-unused-vars */
 } satisfies WebSocketServeOptions<WebSocketDataType>['websocket']
 
-type WebSocketKey = keyof typeof WSEvent
+export type WSEvents = typeof WSEvent
+
+type WebSocketKey = keyof WSEvents
 type WebSocketEventParameterType<T extends WebSocketKey> = Parameters<
-  (typeof WSEvent)[T]
+  WSEvents[T]
 >
 
 /**
@@ -51,14 +53,14 @@ type WebSocketEventParameterType<T extends WebSocketKey> = Parameters<
  * @returns Wrapper on the WSEvent object to handle WebSocket events
  */
 export function webSocketRouteWrapper(routes: Router) {
-  const router = {} as typeof WSEvent
+  const router = {} as WSEvents
   for (const event in WSEvent) {
     // @ts-expect-error - This is a valid use case
     router[event as WebSocketKey] = function <T extends WebSocketKey>(
       ws: ServerWebSocket<WebSocketDataType>,
       ...eventParameters: WebSocketEventParameterType<T>
     ) {
-      const route = routes.find<Record<number, typeof WSEvent>>(ws.data.route)
+      const route = routes.find<Record<number, WSEvents>>(ws.data.route)
       if (route === null) return
       return route.store[0][event as WebSocketKey](
         ws,

@@ -1,12 +1,17 @@
-import Router from './routing'
-import { HTTPMethod, ServerOptions } from '../servers/http'
+import Router from './routing.ts'
+import {
+  HTTPMethod,
+  type HTTPMethods,
+  type ServerOptions
+} from '../servers/http.ts'
 import {
   WSEvent,
-  WebSocketDataType,
-  WebSocketServerOptions,
-  webSocketRouteWrapper
-} from '../servers/websocket'
-import { Middleware, runMiddleware } from './middleware'
+  type WSEvents,
+  webSocketRouteWrapper,
+  type WebSocketDataType,
+  type WebSocketServerOptions
+} from '../servers/websocket.ts'
+import { type Middleware, runMiddleware } from './middleware.ts'
 import { Server as BunServer } from 'bun'
 
 /**
@@ -68,7 +73,7 @@ export class Route {
   }
 }
 
-type GenericRouteType<T extends typeof HTTPMethod | typeof WSEvent = any> = {
+type GenericRouteType<T extends HTTPMethods | WSEvents = any> = {
   [key in keyof T]: T[key]
 }
 
@@ -157,9 +162,10 @@ export class Futen<T extends Record<string, GenericRouteType>> {
         }
         return new Response(null, { status: 101 })
       }
-      return routeStore[
-        request.method.toLowerCase() as keyof typeof HTTPMethod
-      ](request, route.params)
+      return routeStore[request.method.toLowerCase() as keyof HTTPMethods](
+        request,
+        route.params
+      )
     }
   }
 }

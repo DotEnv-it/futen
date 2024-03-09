@@ -1,7 +1,7 @@
-import { HTTPMethod } from '../servers/http'
-import { WSEvent } from '../servers/websocket'
-import { Route } from './core'
-import { Middleware } from './middleware'
+import { type HTTPMethods } from '../servers/http.ts'
+import { type WSEvents } from '../servers/websocket.ts'
+import { Route } from './core.ts'
+import { type Middleware } from './middleware.ts'
 
 /**
  * The route decorator assigns a path to a class within the server it is applied to.
@@ -51,7 +51,7 @@ export function route(path: string) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Context is a mandatory parameter but is always undefined in this case
     _context?: ClassDecoratorContext<T>
   ) {
-    return new Route(target, path, 'http') as typeof HTTPMethod & Route & T
+    return new Route(target, path, 'http') as HTTPMethods & Route & T
   }
 }
 
@@ -69,7 +69,7 @@ export function ws(path: string) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Context is a mandatory parameter but is always undefined in this case
     _context?: ClassDecoratorContext<T>
   ) {
-    return new Route(target, path, 'ws') as typeof WSEvent & Route & T
+    return new Route(target, path, 'ws') as WSEvents & Route & T
   }
 }
 

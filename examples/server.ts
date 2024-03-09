@@ -3,6 +3,7 @@ import { Futen } from "../src/router/core";
 import { route, ws } from "../src/router/decorators";
 import { WebSocketDataType } from "../src/servers/websocket";
 
+// this doesn't benefit of type inference due to https://github.com/Microsoft/TypeScript/issues/4881
 @route('/')
 class IndexController {
     get(req: Request) {
@@ -10,12 +11,14 @@ class IndexController {
     }
 }
 
-// This allows to maintain the correct type for the route class being returned by the decorator
-const WSController = ws('/ws')(class {
-    message(ws: ServerWebSocket<WebSocketDataType>, message: string) {
-        return ws.send(message);
+// This one does though
+const WSController = ws('/ws')(
+    class {
+        message(ws: ServerWebSocket<WebSocketDataType>, message: string) {
+            return ws.send(message);
+        }
     }
-})
+)
 
 const server = new Futen({
     IndexController,
