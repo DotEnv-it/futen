@@ -1,55 +1,56 @@
 {
-  "name": "futen",
-  "version": "0.0.0-prerelease.26",
-  "module": "dist/index.mjs",
-  "types": "dist/index.d.mts",
-  "repository": {
-    "type": "git",
-    "url": "git+https://git.dpaste.org/BioCla/futen.git"
-  },
-  "homepage": "https://github.come/DotEnv-it/futen#readme",
-  "license": "MIT",
-  "devDependencies": {
-    "@types/benchmark": "^2.1.5",
-    "@types/bun": "latest",
-    "@typescript-eslint/eslint-plugin": "^7.1.1",
-    "@typescript-eslint/parser": "^7.1.1",
-    "benchmark": "^2.1.4",
-    "eslint": "^8.57.0",
-    "eslint-config-standard": "^17.1.0",
-    "eslint-plugin-import": "^2.29.1",
-    "eslint-plugin-n": "^16.6.2",
-    "eslint-plugin-prettier": "latest",
-    "eslint-plugin-promise": "^6.1.1",
-    "husky": "^9.0.11",
-    "prettier": "^3.2.5",
-    "tsup": "^8.0.2"
-  },
-  "peerDependencies": {
-    "typescript": "^5.0.0"
-  },
-  "description": "A (very) lightweight web framework, using decorators, simplifying syntax",
-  "keywords": [
-    "bun",
-    "web",
-    "http",
-    "server",
-    "socket",
-    "backend",
-    "framework"
-  ],
-  "peerDependenciesMeta": {
-    "typescript": {
-      "optional": true
+    "name": "futen",
+    "version": "0.0.0",
+    "module": "dist/index.mjs",
+    "types": "dist/index.d.mts",
+    "repository": {
+        "type": "git",
+        "url": "git+https://git.dpaste.org/BioCla/futen.git"
+    },
+    "homepage": "https://github.come/DotEnv-it/futen#readme",
+    "license": "MIT",
+    "devDependencies": {
+        "@stylistic/eslint-plugin": "^1.6.3",
+        "@types/benchmark": "^2.1.5",
+        "@types/bun": "latest",
+        "@typescript-eslint/eslint-plugin": "^7.1.1",
+        "@typescript-eslint/parser": "^7.1.1",
+        "benchmark": "^2.1.4",
+        "eslint": "^8.57.0",
+        "eslint-config-standard": "^17.1.0",
+        "eslint-plugin-import": "^2.29.1",
+        "eslint-plugin-n": "^16.6.2",
+        "eslint-plugin-prettier": "latest",
+        "eslint-plugin-promise": "^6.1.1",
+        "husky": "^9.0.11",
+        "prettier": "^3.2.5",
+        "tsup": "^8.0.2"
+    },
+    "peerDependencies": {
+        "typescript": "^5.0.0"
+    },
+    "description": "A (very) lightweight web framework, using decorators, simplifying syntax",
+    "keywords": [
+        "bun",
+        "web",
+        "http",
+        "server",
+        "socket",
+        "backend",
+        "framework"
+    ],
+    "peerDependenciesMeta": {
+        "typescript": {
+            "optional": true
+        }
+    },
+    "scripts": {
+        "bake": "bun bake.ts",
+        "lint:prettier:fix": "bunx prettier --write ./src/**/*.ts ./tests/**/*.test.ts",
+        "lint:eslint": "bun eslint ./src ./tests --ext .ts",
+        "lint:eslint:fix": "bun eslint ./src ./tests --ext .ts --fix",
+        "lint": "bun lint:prettier:fix && bun lint:eslint",
+        "lint:fix": "bun lint:prettier:fix && bun lint:eslint:fix",
+        "release:dry": "bun lint:fix && bun bake && bun test && npm publish --dry-run"
     }
-  },
-  "scripts": {
-    "bake": "bun bake.ts",
-    "lint:prettier:fix": "bunx prettier --write ./src/**/*.ts ./tests/**/*.test.ts",
-    "lint:eslint": "bun eslint ./src ./tests --ext .ts",
-    "lint:eslint:fix": "bun eslint ./src ./tests --ext .ts --fix",
-    "lint": "bun lint:prettier:fix && bun lint:eslint",
-    "lint:fix": "bun lint:prettier:fix && bun lint:eslint:fix",
-    "release:dry": "bun lint:fix && bun bake && bun test && npm publish --dry-run"
-  }
 }

@@ -7,9 +7,8 @@ tests
 bake.ts
 
 CONTRIBUTING.md
-
 tsconfig.json
-.eslintrc.cjs
+.eslintrc.json
 .prettierrc
 .vscode
 .github
