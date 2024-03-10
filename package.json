@@ -46,11 +46,10 @@
     },
     "scripts": {
         "bake": "bun bake.ts",
-        "lint:prettier:fix": "bunx prettier --write ./src/**/*.ts ./tests/**/*.test.ts",
-        "lint:eslint": "bun eslint ./src ./tests --ext .ts",
-        "lint:eslint:fix": "bun eslint ./src ./tests --ext .ts --fix",
-        "lint": "bun lint:prettier:fix && bun lint:eslint",
-        "lint:fix": "bun lint:prettier:fix && bun lint:eslint:fix",
+        "lint:eslint": "bun eslint --ext .ts",
+        "lint:eslint:fix": "bun eslint --ext .ts --fix",
+        "lint": "bun lint:eslint",
+        "lint:fix": "bun lint:eslint:fix",
         "release:dry": "bun lint:fix && bun bake && bun test && npm publish --dry-run"
     }
 }
