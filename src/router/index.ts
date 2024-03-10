@@ -1,9 +1,3 @@
-/*
- * Based on @medley/router
- * @link https://www.npmjs.com/package/@medley/router
- * @link https://github.com/medleyjs/router
- * @license MIT
- */
 interface Node<T> {
     pathPart: string;
     store: T | null;
@@ -18,60 +12,47 @@ interface Node<T> {
 
 type ParametricNode<T> = NonNullable<Node<T>['parametricChild']>;
 
-export default class Router<T> {
+export default class Router<T = unknown> {
     private readonly root: Node<T>;
-
     public constructor() {
         this.root = createNode('/');
     }
 
     public register(path: string): T {
-        if (typeof path !== 'string')
-            throw new TypeError('Route path must be a string');
+        if (typeof path !== 'string') throw new TypeError('Route path must be a string');
 
-        if (path === '' || path[0] !== '/')
-            throw new Error(`Invalid route: ${path}\nRoute path must begin with a "/"`);
-
+        if (path === '' || path[0] !== '/') throw new Error(`Invalid route: ${path}\nRoute path must begin with a "/"`);
         const endsWithWildcard = path.endsWith('*');
 
         if (endsWithWildcard)
-            path = path.slice(0, -1); // Slice off trailing '*'
-
+            path = path.slice(0, -1);
         const staticParts = path.split(/:.+?(?=\/|$)/);
         const paramParts = path.match(/:.+?(?=\/|$)/g) ?? [];
 
         if (staticParts[staticParts.length - 1] === '')
             staticParts.pop();
-
         let node = this.root;
         let paramPartsIndex = 0;
-
         for (let i = 0; i < staticParts.length; ++i) {
             let pathPart = staticParts[i];
-
             if (i > 0) {
-                // Set parametric properties on the node
                 const paramName = paramParts[paramPartsIndex++].slice(1);
-
                 if (node.parametricChild === null)
                     node.parametricChild = createParametricNode(paramName);
                 else if (node.parametricChild.paramName !== paramName)
                     throw new Error(`Cannot create route "${path}" with parameter "${paramName}" because a route already exists with a different parameter name ("${node.parametricChild.paramName}") in the same location`);
-
                 const { parametricChild } = node;
 
                 if (parametricChild.staticChild === null) {
                     node = parametricChild.staticChild = createNode(pathPart);
                     continue;
                 }
-
                 node = parametricChild.staticChild;
             }
 
             for (let j = 0; ;) {
                 if (j === pathPart.length) {
                     if (j < node.pathPart.length) {
-                        // Move the current node down
                         const childNode = cloneNode(node, node.pathPart.slice(j));
                         Object.assign(node, createNode(pathPart, [childNode]));
                     }
@@ -90,36 +71,27 @@ export default class Router<T> {
                             continue;
                         }
                     }
-
-                    // Create new node
                     const childNode = createNode<T>(pathPart.slice(j));
                     node.staticChildren.set(pathPart.charCodeAt(j), childNode);
                     node = childNode;
-
                     break;
                 }
 
                 if (pathPart[j] !== node.pathPart[j]) {
-                    // Split the node
                     const existingChild = cloneNode(node, node.pathPart.slice(j));
                     const newChild = createNode<T>(pathPart.slice(j));
-
                     Object.assign(
                         node,
                         createNode(node.pathPart.slice(0, j), [existingChild, newChild])
                     );
-
                     node = newChild;
-
                     break;
                 }
-
                 ++j;
             }
         }
 
         if (paramPartsIndex < paramParts.length) {
-            // The final part is a parameter
             const param = paramParts[paramPartsIndex];
             const paramName = param.slice(1);
 
@@ -186,14 +158,11 @@ function matchRoute<T>(
     const pathPartLen = pathPart.length;
     const pathPartEndIndex = startIndex + pathPartLen;
 
-    // Only check the pathPart if its length is > 1 since the parent has
-    // already checked that the url matches the first character
     if (pathPartLen > 1) {
         if (pathPartEndIndex > urlLength)
             return null;
 
         if (pathPartLen < 15) {
-            // Using a loop is faster for short strings
             for (let i = 1, j = startIndex + 1; i < pathPartLen; ++i, ++j) {
                 if (pathPart[i] !== url[j])
                     return null;
@@ -205,7 +174,6 @@ function matchRoute<T>(
     startIndex = pathPartEndIndex;
 
     if (startIndex === urlLength) {
-        // Reached the end of the URL
         if (node.store !== null) {
             return {
                 store: node.store,
@@ -239,10 +207,9 @@ function matchRoute<T>(
         const slashIndex = url.indexOf('/', startIndex);
 
         if (slashIndex !== startIndex) {
-            // Params cannot be empty
             if (slashIndex === -1 || slashIndex >= urlLength) {
                 if (parametricNode.store !== null) {
-                    const params: Record<string, string> = {}; // This is much faster than using a computed property
+                    const params: Record<string, string> = {};
                     params[parametricNode.paramName] = url.slice(startIndex, urlLength);
                     return {
                         store: parametricNode.store,
