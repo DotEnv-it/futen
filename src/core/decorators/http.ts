@@ -22,7 +22,11 @@ export const HTTPMethod = {
 };
 
 export type HTTPMethods = typeof HTTPMethod;
-type FutenHTTPRouteType<T> = Route<T> & HTTPMethods & T;
+type FutenHTTPMethodInterfaceType = {
+    [key in keyof typeof HTTPMethod]?: HTTPMethods[key]
+};
+export interface FutenHTTPRoute extends FutenHTTPMethodInterfaceType {}
+export type FutenHTTPRouteType<T> = Route<T> & HTTPMethods;
 
 export function route(path: string) {
     return function <T extends new (...args: any[]) => any>(
@@ -30,6 +34,6 @@ export function route(path: string) {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Context is a mandatory parameter but is always undefined in this case
         _context?: ClassDecoratorContext<T>
     ) {
-        return new Route(target, path) as FutenHTTPRouteType<T>;
+        return new Route(target, path) as FutenHTTPRouteType<T> & T;
     };
 }

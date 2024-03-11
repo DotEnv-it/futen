@@ -5,7 +5,8 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 // Byte
 import Futen, { route } from '../../src';
-import test from './test';
+//@ts-expect-error - testing
+import test from './test.js';
 import { Byte, send } from '@bit-js/byte';
 
 // Hono
@@ -61,13 +62,13 @@ function createFuten(): (arg0: Request) => any {
     }
     @route('/event/:id')
     class Event {
-        public get(req: any, params: { id: any }): Response {
+        public get(_req: any, params: { id: any }): Response {
             return new Response(`Event ${params.id}`);
         }
     }
     @route('/event/:id/comments')
     class EventComments {
-        public get(req: any, params: { id: any }): Response {
+        public get(_req: any, params: { id: any }): Response {
             return new Response(`Event ${params.id} comments`);
         }
     }
@@ -92,9 +93,8 @@ function createFuten(): (arg0: Request) => any {
         EventComments,
         Status,
         DeeplyNestedRouteForTesting
-    }, { port: 0 });
-    const serverInstance = app.instance;
-    return serverInstance.fetch.bind(serverInstance);
+    }, { port: 80 });
+    return app.fetch;
 }
 
 console.log('Benchmarking...');

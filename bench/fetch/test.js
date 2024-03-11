@@ -50,9 +50,11 @@ function buildPath(path) {
   return { path: parts.join(''), params }
 }
 
-export async function check(res, expect) {
+export async function check(res, expect, label) {
+  console.log(`Testing ${label}...`)
   if (await (await res).text() !== expect) {
-    throw new Error('A framework failed the test')
+    console.log(res, expect)
+    throw new Error(`Failed: ${label}`)
   }
 }
 
@@ -66,7 +68,7 @@ export default function test(frameworks) {
     group(path, () => {
       for (const label in frameworks) {
         const fn = frameworks[label]
-        check(fn(req), routes[path](buildResult.params))
+        check(fn(req), routes[path](buildResult.params), label)
 
         bench(label, () => fn(req, {}, {}))
       }

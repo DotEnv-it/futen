@@ -1,7 +1,7 @@
 import Router from '../../router';
 import { HTTPMethod } from '../decorators/http';
 import type { Server as BunServer, ServeOptions } from 'bun';
-import type { HTTPMethods } from '../decorators/http';
+import type { FutenHTTPRouteType, HTTPMethods } from '../decorators/http';
 
 type MethodType = HTTPMethods;
 
@@ -11,7 +11,7 @@ function overrideMethods<T, K>(
     override: K
 ): T {
     for (const method in methods) {
-        if (override[method]) {
+        if (override[method as keyof K] !== undefined) {
             Object.defineProperty(target, method, {
                 value: override[method as keyof K],
                 writable: true,
@@ -21,7 +21,7 @@ function overrideMethods<T, K>(
             continue;
         }
         Object.defineProperty(target, method, {
-            value: methods[method as keyof HTTPMethods],
+            value: methods[method as keyof MethodType],
             writable: true,
             enumerable: true,
             configurable: true
@@ -55,7 +55,7 @@ export default class Futen<T> {
         store[0] = route;
     }
 
-    private fetch() {
+    private fetchTemplate() {
         return (request: Request) => {
             const url = new URL(request.url);
             const route = this.router.find(url.pathname);
@@ -64,19 +64,22 @@ export default class Futen<T> {
                     status: 404
                 });
             }
-
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-            return route.store[0][request.method.toLowerCase()](
+            const routeStore = route.store[0] as FutenHTTPRouteType<T>;
+            return routeStore[request.method.toLowerCase() as keyof HTTPMethods](
                 request,
                 route.params
             );
         };
     }
 
-    public constructor(routes: Record<string, T>, options?: ServeOptions) {
+    public constructor(routes: Record<string, T>, options?: Partial<ServeOptions>) {
         for (const route of Object.values(routes as Record<string, Route<T>>)) this.addRoute(route.path, route);
 
-        this.instance = Bun.serve({ fetch: this.fetch(), ...options });
+        this.instance = Bun.serve({ fetch: this.fetchTemplate(), ...options });
+    }
+
+    public get fetch(): typeof this.instance.fetch {
+        return this.instance.fetch.bind(this.instance);
     }
 }
 
