@@ -1,5 +1,10 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unnecessary-condition */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 // Byte
-import Futen, { route } from '../../dist/index.mjs';
+import Futen, { route } from '../../src';
 import test from './test';
 import { Byte, send } from '@bit-js/byte';
 
@@ -93,6 +98,7 @@ function createFuten(): (arg0: Request) => any {
 }
 
 console.log('Benchmarking...');
+
 const { benchmarks } = await test({
     Byte: createByte(),
     Hono: createHono(),

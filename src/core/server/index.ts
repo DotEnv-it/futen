@@ -1,5 +1,6 @@
 import Router from '../../router';
 import { HTTPMethod } from '../decorators/http';
+import type { Server as BunServer } from 'bun';
 import type { HTTPMethods } from '../decorators/http';
 
 function overrideMethods<T>(
@@ -44,9 +45,37 @@ export class Route<T> {
 }
 
 export default class Futen<T> {
-    public readonly router = new Router();
+    public readonly router = new Router<T>();
+    public readonly instance: BunServer;
 
-    public constructor(routes: Record<string, Route<T>>) {
-        for (const route of Object.values(routes)) this.router.register(route.path);
+    private addRoute(path: string, route: Route<T>): void {
+        const store = this.router.register(path);
+        store[0] = route;
+    }
+
+    private fetch() {
+        return (request: Request) => {
+            const url = new URL(request.url);
+            const route = this.router.find(url.pathname);
+            if (route === null) {
+                return new Response(`Route not found for ${request.url}`, {
+                    status: 404
+                });
+            }
+            const routeStore = route.store[0] as T;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+            return routeStore[request.method.toLowerCase()](
+                request,
+                route.params
+            );
+        };
+    }
+
+    public constructor(routes: Record<string, T>, options?: any) {
+        for (const route of Object.values(routes as Record<string, Route<T>>)) this.addRoute(route.path, route);
+
+        // eslint-disable-next-line @typescript-eslint/unbound-method, @typescript-eslint/no-unsafe-argument
+        this.instance = Bun.serve({ fetch: this.fetch, ...options });
     }
 }
+

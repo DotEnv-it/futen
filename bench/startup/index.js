@@ -31,7 +31,7 @@ Routes["${route.path}"] = Route${route.path.replace(/\//g, '_').replace(/:/g, ''
 }
 
 exec('Futen', [
-  'import Futen, { route } from "./index.mjs"',
+  'import Futen, { route } from "../src"',
   // 'performance.mark("Build start")',
   'const Routes = {}'
 ], (route) => futenRoute(route), 'futen')
