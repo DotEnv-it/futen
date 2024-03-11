@@ -1,13 +1,13 @@
 interface Node<T> {
     pathPart: string;
-    store: T | null;
+    store: Record<number, T> | null;
     staticChildren: Map<number, Node<T>> | null;
     parametricChild: {
         paramName: string,
-        store: T | null,
+        store: Record<number, T> | null,
         staticChild: Node<T> | null
     } | null;
-    wildcardStore: T | null;
+    wildcardStore: Record<number, T> | null;
 }
 
 type ParametricNode<T> = NonNullable<Node<T>['parametricChild']>;
@@ -18,7 +18,7 @@ export default class Router<T = unknown> {
         this.root = createNode('/');
     }
 
-    public register(path: string): T {
+    public register(path: string): Record<number, T> {
         if (typeof path !== 'string') throw new TypeError('Route path must be a string');
 
         if (path === '' || path[0] !== '/') throw new Error(`Invalid route: ${path}\nRoute path must begin with a "/"`);
@@ -106,7 +106,7 @@ export default class Router<T = unknown> {
         return node.store ?? Object.create(null);
     }
 
-    public find(url: string): { store: T, params: Record<string, string> } | null {
+    public find(url: string): { store: Record<number, T>, params: Record<string, string> } | null {
         if (url === '' || url[0] !== '/')
             return null;
 
@@ -153,7 +153,7 @@ function matchRoute<T>(
     urlLength: number,
     node: Node<T>,
     startIndex: number
-): { store: T, params: Record<string, string> } | null {
+): { store: Record<number, T>, params: Record<string, string> } | null {
     const { pathPart } = node;
     const pathPartLen = pathPart.length;
     const pathPartEndIndex = startIndex + pathPartLen;

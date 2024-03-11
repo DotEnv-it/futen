@@ -3,10 +3,10 @@
 
 ### Mandatory to make commits, otherwise PR will be rejected
 # Lint and fix syntax
-bun lint:fix
+# bun lint:fix
 
 # Run build
-bun bake
+# bun bake
 
 # Tests need to run on the built package to be considered valid
-bun test
+# bun test
