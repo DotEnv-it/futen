@@ -8,7 +8,6 @@ export const routesCount = 100;
 function makePart(): string {
     const result = [];
     const length = 2 + Math.round(Math.random() * 16);
-    // @ts-expect-error - dummy
     for (let cnt = 0; cnt < length; ++cnt) result.push(characters[Math.floor(Math.random() * charactersLength)]);
 
     return result.join('');

@@ -99,11 +99,21 @@ export default class Router<T = unknown> {
                 node.parametricChild = createParametricNode<T>(paramName);
             else if (node.parametricChild.paramName !== paramName)
                 throw new Error(`Cannot create route "${path}" with parameter "${paramName}" because a route already exists with a different parameter name ("${node.parametricChild.paramName}") in the same location`);
-            return node.parametricChild.store ?? Object.create(null);
+
+            if (node.parametricChild.store === null)
+                node.parametricChild.store = {};
+
+            return node.parametricChild.store;
         }
-        if (endsWithWildcard)
-            return node.wildcardStore ?? Object.create(null);
-        return node.store ?? Object.create(null);
+
+        if (endsWithWildcard) {
+            if (node.wildcardStore === null)
+                node.wildcardStore = {};
+            return node.wildcardStore;
+        }
+        if (node.store === null)
+            node.store = {};
+        return node.store;
     }
 
     public find(url: string): { store: Record<number, T>, params: Record<string, string> } | null {

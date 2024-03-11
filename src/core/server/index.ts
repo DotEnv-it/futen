@@ -74,7 +74,6 @@ export default class Futen<T> {
 
     public constructor(routes: Record<string, T>, options?: Partial<ServeOptions>) {
         for (const route of Object.values(routes as Record<string, Route<T>>)) this.addRoute(route.path, route);
-
         this.instance = Bun.serve({ fetch: this.fetchTemplate(), ...options });
     }
 

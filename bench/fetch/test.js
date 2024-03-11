@@ -51,9 +51,8 @@ function buildPath(path) {
 }
 
 export async function check(res, expect, label) {
-  console.log(`Testing ${label}...`)
   if (await (await res).text() !== expect) {
-    console.log(res, expect)
+    console.log(label)
     throw new Error(`Failed: ${label}`)
   }
 }
@@ -63,7 +62,7 @@ export default function test(frameworks) {
 
   for (const path in routes) {
     const buildResult = buildPath(path)
-    const req = new Request('http://localhost' + buildResult.path)
+    const req = new Request('http://localhost:80' + buildResult.path)
 
     group(path, () => {
       for (const label in frameworks) {
