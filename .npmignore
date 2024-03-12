@@ -3,6 +3,7 @@
 src
 examples
 benchmarks
+bench
 tests
 bake.ts
 

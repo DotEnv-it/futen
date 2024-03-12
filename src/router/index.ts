@@ -26,6 +26,7 @@ export default class Router<T = unknown> {
 
         if (endsWithWildcard)
             path = path.slice(0, -1);
+        // "/:[^\n\/]+(?=\/|$)/" also works
         const staticParts = path.split(/:.+?(?=\/|$)/);
         const paramParts = path.match(/:.+?(?=\/|$)/g) ?? [];
 
