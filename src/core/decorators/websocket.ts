@@ -1,4 +1,5 @@
 import { Route } from '../server';
+import type Router from '../../router';
 import type { ServerWebSocket, WebSocketServeOptions } from 'bun';
 
 export type WebSocketDataType = {
@@ -35,4 +36,31 @@ export function ws(path: string) {
     ) {
         return new Route(target, path, 'ws') as FutenWebSocketRouteType<T> & T;
     };
+}
+
+type WebSocketKey = keyof typeof WSEvent;
+type WebSocketEventParameterType<T extends WebSocketKey> = Parameters<
+    (typeof WSEvent)[T]
+>;
+
+export function webSocketRouteWrapper(routes: Router): WSEvents {
+    const router = {} as typeof WSEvent;
+    for (const event in WSEvent) {
+        // @ts-expect-error - This is a valid use case
+        router[event as WebSocketKey] = function <T extends WebSocketKey>(
+            websocket: ServerWebSocket<WebSocketDataType>,
+            ...eventParameters: WebSocketEventParameterType<T>
+        ) {
+            const route = routes.find(websocket.data.route);
+            if (route === null) return;
+            // @ts-expect-error - This is a valid use case
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+            return route.store[0][event](
+                websocket,
+                ...eventParameters,
+                websocket.data.params
+            );
+        };
+    }
+    return router;
 }

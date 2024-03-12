@@ -1,6 +1,6 @@
 import Router from '../../router';
 import { HTTPMethod } from '../decorators/http';
-import { WSEvent } from '../decorators/websocket';
+import { WSEvent, webSocketRouteWrapper } from '../decorators/websocket';
 import type { Server as BunServer, ServeOptions } from 'bun';
 import type { HTTPMethods } from '../decorators/http';
 import type { WSEvents, WebSocketDataType } from '../decorators/websocket';
@@ -58,15 +58,18 @@ export class Route<T> {
 
 export default class Futen<T> {
     public readonly router = new Router<Route<T>>();
+    public readonly routes: Record<keyof T, Route<T>>;
     public readonly instance: BunServer;
 
-    public constructor(routes: Record<string, T>, options?: Partial<ServeOptions>) {
+    public constructor(routes: T, options?: Partial<ServeOptions>) {
         for (const route of Object.values(routes as Record<string, Route<T>>)) {
             const store = this.router.register(route.path);
             store[0] = route;
         }
+        this.routes = routes as Record<keyof T, Route<T>>;
         this.instance = Bun.serve({
             fetch: this.fetch,
+            websocket: webSocketRouteWrapper(this.router),
             ...options
         });
     }
