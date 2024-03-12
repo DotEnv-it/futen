@@ -32,5 +32,6 @@
     "include": [
         "./src/**/*.ts",
         "./bench/**/*.ts",
+        "./examples/**/*.ts",
     ]
 }

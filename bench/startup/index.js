@@ -20,18 +20,15 @@ exec('Elysia', [
 ], (route) => `\t.get('${route.path}', () => ${route.value})`)
 
 function futenRoute(route) {
-  return `@route("/${route.path}")
-class Route${route.path.replace(/\//g, '_').replace(/:/g, '')} {
+  return `Route${route.path.replace(/\//g, '_').replace(/:/g, '')}: route("/${route.path}")(class Route${route.path.replace(/\//g, '_').replace(/:/g, '')} {
   get() {
     return new Response(${route.value});
   }
-}
-Routes["${route.path}"] = Route${route.path.replace(/\//g, '_').replace(/:/g, '')}
-`
+}),`
 }
 
 exec('Futen', [
-  'import Futen, { route } from "../src"',
+  'import Futen, { route } from "./index.mjs"',
   // 'performance.mark("Build start")',
-  'const Routes = {}'
+  'const Routes = {'
 ], (route) => futenRoute(route), 'futen')

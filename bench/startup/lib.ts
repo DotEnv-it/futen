@@ -28,8 +28,9 @@ for (let i = 0; i < routesCount; ++i) routes[i] = { path: makePart(), value: `"$
 export async function exec(name: string, content: string[], chain: { (route: any): string, (route: any): string, (route: any): string, (route: any): string, (arg0: any): any }, type: string | undefined): Promise<void> {
     for (let i = 0; i < routesCount; ++i) content.push(chain(routes[i]));
     if (type === 'futen') {
+        content.push('}');
         content.push('performance.mark("Build start")');
-        content.push('const server = new Futen(Routes)');
+        content.push('const { fetch } = new Futen(Routes)');
     }
 
     content.push('fetch(new Request("http://localhost:3000"))');

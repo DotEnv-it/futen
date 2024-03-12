@@ -1,9 +1,11 @@
 import Router from '../../router';
 import { HTTPMethod } from '../decorators/http';
+import { WSEvent } from '../decorators/websocket';
 import type { Server as BunServer, ServeOptions } from 'bun';
-import type { FutenHTTPRouteType, HTTPMethods } from '../decorators/http';
+import type { HTTPMethods } from '../decorators/http';
+import type { WSEvents, WebSocketDataType } from '../decorators/websocket';
 
-type MethodType = HTTPMethods;
+type MethodType = HTTPMethods | WSEvents;
 
 function overrideMethods<T, K>(
     target: T,
@@ -35,14 +37,22 @@ export class Route<T> {
     public readonly path: string;
     public constructor(
         target: T,
-        path: string
+        path: string,
+        typeOfRoute: 'http' | 'ws'
     ) {
         if (typeof target !== 'function')
             throw new Error('Invalid target, expected a class. Make sure to apply the decorator to a class, not to a method or property.');
         this.target = target;
         this.path = path;
 
-        overrideMethods(this, HTTPMethod, target.prototype);
+        switch (typeOfRoute) {
+            case 'http':
+                overrideMethods(this, HTTPMethod, target.prototype);
+                break;
+            case 'ws':
+                overrideMethods(this, WSEvent, target.prototype);
+                break;
+        }
     }
 }
 
@@ -50,35 +60,43 @@ export default class Futen<T> {
     public readonly router = new Router<Route<T>>();
     public readonly instance: BunServer;
 
-    private addRoute(path: string, route: Route<T>): void {
-        const store = this.router.register(path);
-        store[0] = route;
+    public constructor(routes: Record<string, T>, options?: Partial<ServeOptions>) {
+        for (const route of Object.values(routes as Record<string, Route<T>>)) {
+            const store = this.router.register(route.path);
+            store[0] = route;
+        }
+        this.instance = Bun.serve({
+            fetch: this.fetch,
+            ...options
+        });
     }
 
-    private fetchTemplate() {
-        return (request: Request) => {
-            const url = new URL(request.url);
-            const route = this.router.find(url.pathname);
+    public get fetch() {
+        return (request: Request, server: BunServer) => {
+            const route = this.router.find(request.url.substring(request.url.indexOf('/', 8)));
             if (route === null) {
                 return new Response(`Route not found for ${request.url}`, {
                     status: 404
                 });
             }
-            const routeStore = route.store[0] as FutenHTTPRouteType<T>;
-            return routeStore[request.method.toLowerCase() as keyof HTTPMethods](
+            if (request.headers.get('upgrade') === 'websocket') {
+                if (
+                    !server.upgrade(request, {
+                        data: {
+                            route: route.store[0].path,
+                            params: route.params
+                        } satisfies WebSocketDataType
+                    })
+                ) return new Response('Upgrade failed!', { status: 500 });
+                return new Response(null, { status: 101 });
+            }
+            // @ts-expect-error - Element implicitly has an 'any' type because expression of type '"get" | "head" | "post" | "put" | "delete" | "connect" | "options" | "trace" | "patch"' can't be used to index type 'Route<T>'. Property 'get' does not exist on type 'Route<T>'.
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+            return route.store[0][request.method.toLowerCase()](
                 request,
                 route.params
             );
         };
-    }
-
-    public constructor(routes: Record<string, T>, options?: Partial<ServeOptions>) {
-        for (const route of Object.values(routes as Record<string, Route<T>>)) this.addRoute(route.path, route);
-        this.instance = Bun.serve({ fetch: this.fetchTemplate(), ...options });
-    }
-
-    public get fetch(): typeof this.instance.fetch {
-        return this.instance.fetch.bind(this.instance);
     }
 }
 

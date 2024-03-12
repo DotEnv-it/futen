@@ -51,8 +51,9 @@ function buildPath(path) {
 }
 
 export async function check(res, expect, label) {
+  // console.log(label, ': ' ,await (await res).text(), '===', expect)
   if (await (await res).text() !== expect) {
-    console.log(label)
+    console.log(`${label} failed`)
     throw new Error(`Failed: ${label}`)
   }
 }
