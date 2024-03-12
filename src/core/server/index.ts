@@ -58,7 +58,7 @@ export class Route<T> {
 
 export default class Futen<T> {
     public readonly router = new Router<Route<T>>();
-    public readonly routes: Record<keyof T, Route<T>>;
+    public readonly routes: { [key in keyof T]: Route<T[key]> };
     public readonly instance: BunServer;
 
     public constructor(routes: T, options?: Partial<ServeOptions>) {
@@ -66,7 +66,7 @@ export default class Futen<T> {
             const store = this.router.register(route.path);
             store[0] = route;
         }
-        this.routes = routes as Record<keyof T, Route<T>>;
+        this.routes = routes as { [key in keyof T]: Route<T[key]> };
         this.instance = Bun.serve({
             fetch: this.fetch,
             websocket: webSocketRouteWrapper(this.router),
