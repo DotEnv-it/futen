@@ -1,9 +1,8 @@
 import { Route } from '../server';
-import type Router from '../../router';
 import type { ServerWebSocket, WebSocketServeOptions } from 'bun';
 
-export type WebSocketDataType = {
-    route: string,
+export type WebSocketDataType<T = unknown> = {
+    route: FutenWebSocketRouteType<T>,
     params: Record<string, string>
 };
 
@@ -25,8 +24,8 @@ export const WSEvent = {
     /* eslint-enable @typescript-eslint/no-unused-vars */
 } satisfies WebSocketServeOptions<WebSocketDataType>['websocket'];
 
-type FutenWebSocketRouteType<T> = Route<T> & WSEvents;
-export type WSEvents = typeof WSEvent;
+export interface FutenWebSocketRoute extends Partial<typeof WSEvent> { }
+export type FutenWebSocketRouteType<T> = Route<T> & Required<FutenWebSocketRoute>;
 
 export function ws(path: string) {
     return function <T extends new (...args: any[]) => any>(
@@ -39,24 +38,19 @@ export function ws(path: string) {
 }
 
 type WebSocketKey = keyof typeof WSEvent;
-type WebSocketEventParameterType<T extends WebSocketKey> = Parameters<
-    (typeof WSEvent)[T]
->;
+type OmitFirstArg<F> = F extends (arg0: any, ...args: infer P) => infer R ? (...args: P) => R : never;
+type WebSocketEventParameterType<T extends WebSocketKey> = Parameters<OmitFirstArg<typeof WSEvent[T]>>;
 
-export function webSocketRouteWrapper(routes: Router): WSEvents {
+export function webSocketRouteWrapper(): typeof WSEvent {
     const router = {} as typeof WSEvent;
-    for (const event in WSEvent) {
-        // @ts-expect-error - This is a valid use case
-        router[event as WebSocketKey] = function <T extends WebSocketKey>(
+    for (const event of Object.keys(WSEvent) as WebSocketKey[]) {
+        router[event] = function (
             websocket: ServerWebSocket<WebSocketDataType>,
-            ...eventParameters: WebSocketEventParameterType<T>
+            ...eventParameters: WebSocketEventParameterType<typeof event>
         ) {
-            const route = routes.find(websocket.data.route);
-            if (route === null) return;
-            // @ts-expect-error - This is a valid use case
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-            return route.store[0][event](
+            websocket.data.route[event](
                 websocket,
+                // @ts-expect-error - shush
                 ...eventParameters,
                 websocket.data.params
             );

@@ -1,6 +1,6 @@
 import { Route } from '../server';
 
-function defaultHTTPHandler(
+export function defaultHTTPHandler(
     /* eslint-disable @typescript-eslint/no-unused-vars */
     _request: Request,
     _params: Record<string, string>
@@ -21,12 +21,8 @@ export const HTTPMethod = {
     patch: defaultHTTPHandler
 };
 
-export type HTTPMethods = typeof HTTPMethod;
-type FutenHTTPMethodInterfaceType = {
-    [key in keyof typeof HTTPMethod]?: HTTPMethods[key]
-};
-export interface FutenHTTPRoute extends FutenHTTPMethodInterfaceType { }
-export type FutenHTTPRouteType<T> = Route<T> & HTTPMethods;
+export interface FutenHTTPRoute extends Partial<typeof HTTPMethod> { }
+export type FutenHTTPRouteType<T> = Route<T> & FutenHTTPRoute;
 
 export function route(path: string) {
     return function <T extends new (...args: any[]) => any>(
