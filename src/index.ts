@@ -1,5 +1,2 @@
-import Router from './router/routing.ts'
-
-export * from './servers/index.ts'
-export * from './router/decorators.ts'
-export { Router }
+export * from './core';
+export { default } from './core/server';
