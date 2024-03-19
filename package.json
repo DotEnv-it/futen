@@ -7,7 +7,7 @@
     "type": "git",
     "url": "git+https://git.dpaste.org/BioCla/futen.git"
   },
-  "homepage": "https://github.come/DotEnv-it/futen#readme",
+  "homepage": "https://github.com/DotEnv-it/futen#readme",
   "license": "MIT",
   "devDependencies": {
     "@stylistic/eslint-plugin": "^1.6.3",
