@@ -5,7 +5,7 @@
   "types": "dist/index.d.mts",
   "repository": {
     "type": "git",
-    "url": "git+https://git.dpaste.org/BioCla/futen.git"
+    "url": "https://git.dpaste.org/BioCla/futen.git"
   },
   "homepage": "https://github.com/DotEnv-it/futen#readme",
   "license": "MIT",
