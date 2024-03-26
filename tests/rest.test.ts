@@ -6,12 +6,14 @@ describe('REST', () => {
     class Home {
         public get(): Response {
             // eslint-disable-next-line @typescript-eslint/no-use-before-define
-            const routes = Object.entries(server.routes).map(([routeClass, handler]) => {
-                return {
-                    class: routeClass,
-                    path: handler.path
-                };
-            });
+            const routes = Object.entries(server.routes).map(
+                ([routeClass, handler]) => {
+                    return {
+                        class: routeClass,
+                        path: handler.path
+                    };
+                }
+            );
             return Response.json({
                 routes
             });
@@ -37,7 +39,9 @@ describe('REST', () => {
 
     const { port } = server.instance;
     test('should return routes', async () => {
-        const response = await server.instance.fetch(new Request(`http://localhost:${port}/`));
+        const response = await server.instance.fetch(
+            new Request(`http://localhost:${port}/`)
+        );
         const body = await response.json();
         expect(body).toEqual({
             routes: [
@@ -54,10 +58,12 @@ describe('REST', () => {
     });
 
     test('should return request body', async () => {
-        const response = await server.instance.fetch(new Request(`http://localhost:${port}/test`, {
-            method: 'post',
-            body: JSON.stringify({ hello: 'world' })
-        }));
+        const response = await server.instance.fetch(
+            new Request(`http://localhost:${port}/test`, {
+                method: 'post',
+                body: JSON.stringify({ hello: 'world' })
+            })
+        );
         const body = await response.json();
         expect(body).toEqual({ object: { hello: 'world' } });
     });

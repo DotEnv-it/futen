@@ -3,9 +3,9 @@ interface Node<T> {
     store: Record<number, T> | null;
     staticChildren: Map<number, Node<T>> | null;
     parametricChild: {
-        paramName: string,
-        store: Record<number, T> | null,
-        staticChild: Node<T> | null
+        paramName: string;
+        store: Record<number, T> | null;
+        staticChild: Node<T> | null;
     } | null;
     wildcardStore: Record<number, T> | null;
 }
@@ -19,19 +19,22 @@ export default class Router<T = unknown> {
     }
 
     public register(path: string): Record<number, T> {
-        if (typeof path !== 'string') throw new TypeError('Route path must be a string');
+        if (typeof path !== 'string')
+            throw new TypeError('Route path must be a string');
 
-        if (path === '' || path[0] !== '/') throw new Error(`Invalid route: ${path}\nRoute path must begin with a "/"`);
+        if (path === '' || path[0] !== '/') {
+            throw new Error(
+                `Invalid route: ${path}\nRoute path must begin with a "/"`
+            );
+        }
         const endsWithWildcard = path.endsWith('*');
 
-        if (endsWithWildcard)
-            path = path.slice(0, -1);
+        if (endsWithWildcard) path = path.slice(0, -1);
         // "/:[^\n\/]+(?=\/|$)/" also works
         const staticParts = path.split(/:.+?(?=\/|$)/);
         const paramParts = path.match(/:.+?(?=\/|$)/g) ?? [];
 
-        if (staticParts[staticParts.length - 1] === '')
-            staticParts.pop();
+        if (staticParts[staticParts.length - 1] === '') staticParts.pop();
         let node = this.root;
         let paramPartsIndex = 0;
         for (let i = 0; i < staticParts.length; ++i) {
@@ -40,8 +43,11 @@ export default class Router<T = unknown> {
                 const paramName = paramParts[paramPartsIndex++].slice(1);
                 if (node.parametricChild === null)
                     node.parametricChild = createParametricNode(paramName);
-                else if (node.parametricChild.paramName !== paramName)
-                    throw new Error(`Cannot create route "${path}" with parameter "${paramName}" because a route already exists with a different parameter name ("${node.parametricChild.paramName}") in the same location`);
+                else if (node.parametricChild.paramName !== paramName) {
+                    throw new Error(
+                        `Cannot create route "${path}" with parameter "${paramName}" because a route already exists with a different parameter name ("${node.parametricChild.paramName}") in the same location`
+                    );
+                }
                 const { parametricChild } = node;
 
                 if (parametricChild.staticChild === null) {
@@ -54,7 +60,10 @@ export default class Router<T = unknown> {
             for (let j = 0; ;) {
                 if (j === pathPart.length) {
                     if (j < node.pathPart.length) {
-                        const childNode = cloneNode(node, node.pathPart.slice(j));
+                        const childNode = cloneNode(
+                            node,
+                            node.pathPart.slice(j)
+                        );
                         Object.assign(node, createNode(pathPart, [childNode]));
                     }
                     break;
@@ -64,7 +73,9 @@ export default class Router<T = unknown> {
                     if (node.staticChildren === null)
                         node.staticChildren = new Map();
                     else {
-                        const staticChild = node.staticChildren.get(pathPart.charCodeAt(j));
+                        const staticChild = node.staticChildren.get(
+                            pathPart.charCodeAt(j)
+                        );
                         if (staticChild !== undefined) {
                             node = staticChild;
                             pathPart = pathPart.slice(j);
@@ -79,11 +90,17 @@ export default class Router<T = unknown> {
                 }
 
                 if (pathPart[j] !== node.pathPart[j]) {
-                    const existingChild = cloneNode(node, node.pathPart.slice(j));
+                    const existingChild = cloneNode(
+                        node,
+                        node.pathPart.slice(j)
+                    );
                     const newChild = createNode<T>(pathPart.slice(j));
                     Object.assign(
                         node,
-                        createNode(node.pathPart.slice(0, j), [existingChild, newChild])
+                        createNode(node.pathPart.slice(0, j), [
+                            existingChild,
+                            newChild
+                        ])
                     );
                     node = newChild;
                     break;
@@ -98,8 +115,11 @@ export default class Router<T = unknown> {
 
             if (node.parametricChild === null)
                 node.parametricChild = createParametricNode<T>(paramName);
-            else if (node.parametricChild.paramName !== paramName)
-                throw new Error(`Cannot create route "${path}" with parameter "${paramName}" because a route already exists with a different parameter name ("${node.parametricChild.paramName}") in the same location`);
+            else if (node.parametricChild.paramName !== paramName) {
+                throw new Error(
+                    `Cannot create route "${path}" with parameter "${paramName}" because a route already exists with a different parameter name ("${node.parametricChild.paramName}") in the same location`
+                );
+            }
 
             if (node.parametricChild.store === null)
                 node.parametricChild.store = {};
@@ -108,18 +128,17 @@ export default class Router<T = unknown> {
         }
 
         if (endsWithWildcard) {
-            if (node.wildcardStore === null)
-                node.wildcardStore = {};
+            if (node.wildcardStore === null) node.wildcardStore = {};
             return node.wildcardStore;
         }
-        if (node.store === null)
-            node.store = {};
+        if (node.store === null) node.store = {};
         return node.store;
     }
 
-    public find(url: string): { store: Record<number, T>, params: Record<string, string> } | null {
-        if (url === '' || url[0] !== '/')
-            return null;
+    public find(
+        url: string
+    ): { store: Record<number, T>, params: Record<string, string> } | null {
+        if (url === '' || url[0] !== '/') return null;
 
         const queryIndex = url.indexOf('?');
         const urlLength = queryIndex >= 0 ? queryIndex : url.length;
@@ -135,7 +154,12 @@ function createNode<T>(pathPart: string, staticChildren?: Node<T>[]): Node<T> {
         staticChildren:
             staticChildren === undefined
                 ? null
-                : new Map(staticChildren.map((child) => [child.pathPart.charCodeAt(0), child])),
+                : new Map(
+                    staticChildren.map((child) => [
+                        child.pathPart.charCodeAt(0),
+                        child
+                    ])
+                ),
         parametricChild: null,
         wildcardStore: null
     };
@@ -170,14 +194,10 @@ function matchRoute<T>(
     const pathPartEndIndex = startIndex + pathPartLen;
 
     if (pathPartLen > 1) {
-        if (pathPartEndIndex > urlLength)
-            return null;
+        if (pathPartEndIndex > urlLength) return null;
 
         if (pathPartLen < 15) {
-            for (let i = 1, j = startIndex + 1; i < pathPartLen; ++i, ++j) {
-                if (pathPart[i] !== url[j])
-                    return null;
-            }
+            for (let i = 1, j = startIndex + 1; i < pathPartLen; ++i, ++j) if (pathPart[i] !== url[j]) return null;
         } else if (url.slice(startIndex, pathPartEndIndex) !== pathPart)
             return null;
     }
@@ -208,8 +228,7 @@ function matchRoute<T>(
         if (staticChild !== undefined) {
             const route = matchRoute(url, urlLength, staticChild, startIndex);
 
-            if (route !== null)
-                return route;
+            if (route !== null) return route;
         }
     }
 
@@ -221,7 +240,10 @@ function matchRoute<T>(
             if (slashIndex === -1 || slashIndex >= urlLength) {
                 if (parametricNode.store !== null) {
                     const params: Record<string, string> = {};
-                    params[parametricNode.paramName] = url.slice(startIndex, urlLength);
+                    params[parametricNode.paramName] = url.slice(
+                        startIndex,
+                        urlLength
+                    );
                     return {
                         store: parametricNode.store,
                         params

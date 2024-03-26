@@ -2,15 +2,14 @@ import Router from '../../router';
 import { HTTPMethod } from '../decorators/http';
 import { WSEvent, webSocketRouteWrapper } from '../decorators/websocket';
 import type { Server as BunServer, ServeOptions } from 'bun';
-import type { FutenWebSocketRouteType, WebSocketDataType } from '../decorators/websocket';
+import type {
+    FutenWebSocketRouteType,
+    WebSocketDataType
+} from '../decorators/websocket';
 
 type RouteType = typeof HTTPMethod | typeof WSEvent;
 
-function overrideMethods<T, K>(
-    target: T,
-    methods: RouteType,
-    override: K
-): T {
+function overrideMethods<T, K>(target: T, methods: RouteType, override: K): T {
     for (const method in methods) {
         if (override[method as keyof K] !== undefined) {
             Object.defineProperty(target, method, {
@@ -34,13 +33,12 @@ function overrideMethods<T, K>(
 export class Route<T> {
     public readonly target: T;
     public readonly path: string;
-    public constructor(
-        target: T,
-        path: string,
-        typeOfRoute: 'http' | 'ws'
-    ) {
-        if (typeof target !== 'function')
-            throw new Error('Invalid target, expected a class. Make sure to apply the decorator to a class, not to a method or property.');
+    public constructor(target: T, path: string, typeOfRoute: 'http' | 'ws') {
+        if (typeof target !== 'function') {
+            throw new Error(
+                'Invalid target, expected a class. Make sure to apply the decorator to a class, not to a method or property.'
+            );
+        }
         this.target = target;
         this.path = path;
 
@@ -75,19 +73,25 @@ export default class Futen<T> {
 
     public get fetch() {
         return (request: Request, server?: BunServer) => {
-            const route = this.router.find(request.url.substring(request.url.indexOf('/', 8)));
+            const route = this.router.find(
+                request.url.substring(request.url.indexOf('/', 8))
+            );
             if (route === null) {
                 return new Response(`Route not found for ${request.url}`, {
                     status: 404
                 });
             }
             if (request.headers.get('upgrade') === 'websocket') {
-                if (server !== undefined && !server.upgrade(request, {
-                    data: {
-                        route: route.store[0] as FutenWebSocketRouteType<T>,
-                        params: route.params
-                    } satisfies WebSocketDataType
-                })) return new Response('Upgrade failed!', { status: 500 });
+                if (
+                    server !== undefined &&
+                    !server.upgrade(request, {
+                        data: {
+                            route: route.store[0] as FutenWebSocketRouteType<T>,
+                            params: route.params
+                        } satisfies WebSocketDataType
+                    })
+                )
+                    return new Response('Upgrade failed!', { status: 500 });
                 return new Response(null, { status: 101 });
             }
             // @ts-expect-error - Element implicitly has an 'any' type because expression of type '"get" | "head" | "post" | "put" | "delete" | "connect" | "options" | "trace" | "patch"' can't be used to index type 'Route<T>'. Property 'get' does not exist on type 'Route<T>'.

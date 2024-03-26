@@ -21,7 +21,7 @@ export const HTTPMethod = {
     patch: defaultHTTPHandler
 };
 
-export interface FutenHTTPRoute extends Partial<typeof HTTPMethod> { }
+export interface FutenHTTPRoute extends Partial<typeof HTTPMethod> {}
 export type FutenHTTPRouteType<T> = Route<T> & FutenHTTPRoute;
 
 export function route(path: string) {

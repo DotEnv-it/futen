@@ -24,7 +24,7 @@ describe('WebSocket', () => {
         public message(
             websocket: ServerWebSocket<WebSocketDataType>,
             message: string,
-            params: { id: string, id2: string }
+            params: { id: string; id2: string }
         ): number {
             if (message === 'Close me, please!') {
                 return wsServer.routes.WebSocket2.close(
@@ -41,7 +41,7 @@ describe('WebSocket', () => {
             websocket: ServerWebSocket,
             code: number,
             message: string,
-            params: { id: string, id2: string }
+            params: { id: string; id2: string }
         ): void {
             expect(code).toBe(1000);
             websocket.close(
@@ -50,7 +50,10 @@ describe('WebSocket', () => {
             );
         }
 
-        public open(websocket: ServerWebSocket, params: { id: string, id2: string }): number {
+        public open(
+            websocket: ServerWebSocket,
+            params: { id: string; id2: string }
+        ): number {
             const openMessage = `WebSocket opened from SecondWebSocket with params ${JSON.stringify(params)}`;
             return websocket.send(openMessage);
         }
@@ -77,43 +80,63 @@ describe('WebSocket', () => {
     });
 
     test('should verify the message event of the instances', async () => {
-        const websocket = new WebSocket(`ws://localhost:${randomPort}/websocket1`);
+        const websocket = new WebSocket(
+            `ws://localhost:${randomPort}/websocket1`
+        );
         let expectsFired = 0;
         websocket.onmessage = (event) => {
             expect(event.data).toBe('Hello, world! from FirstWebSocket');
             websocket.close();
             expectsFired++;
         };
-        websocket.onopen = () => { websocket.send('Hello, world!'); };
-        await new Promise((resolve) => { websocket.onclose = resolve; });
+        websocket.onopen = () => {
+            websocket.send('Hello, world!');
+        };
+        await new Promise((resolve) => {
+            websocket.onclose = resolve;
+        });
         expect(expectsFired).toBe(1);
     });
 
     test('should verify the message event with params of the instances', async () => {
-        const websocket = new WebSocket(`ws://localhost:${randomPort}/websocket2/1/2`);
+        const websocket = new WebSocket(
+            `ws://localhost:${randomPort}/websocket2/1/2`
+        );
         let expectsFired = 0;
         websocket.onmessage = (event) => {
-            expect(event.data).toBe('WebSocket opened from SecondWebSocket with params {"id2":"2","id":"1"}');
+            expect(event.data).toBe(
+                'WebSocket opened from SecondWebSocket with params {"id2":"2","id":"1"}'
+            );
             websocket.close();
             expectsFired++;
         };
-        websocket.onopen = () => { websocket.send('Hello, world!'); };
-        await new Promise((resolve) => { websocket.onclose = resolve; });
+        websocket.onopen = () => {
+            websocket.send('Hello, world!');
+        };
+        await new Promise((resolve) => {
+            websocket.onclose = resolve;
+        });
         expect(expectsFired).toBe(1);
     });
 
     test('should verify the close event of the instances', async () => {
-        const websocket = new WebSocket(`ws://localhost:${randomPort}/websocket2/1/2`);
+        const websocket = new WebSocket(
+            `ws://localhost:${randomPort}/websocket2/1/2`
+        );
         let expectsFired = 0;
         websocket.onclose = (event) => {
             expect(event.code).toBe(1000);
-            expect(event.reason).toBe('WebSocket closed from SecondWebSocket with code 1000 and message Goodbye, world! and params {"id":"1","id2":"2"}');
+            expect(event.reason).toBe(
+                'WebSocket closed from SecondWebSocket with code 1000 and message Goodbye, world! and params {"id":"1","id2":"2"}'
+            );
             expectsFired++;
         };
         websocket.onopen = () => {
             websocket.send('Close me, please!');
         };
-        await new Promise((resolve) => { websocket.onclose = resolve; });
+        await new Promise((resolve) => {
+            websocket.onclose = resolve;
+        });
         expect(expectsFired).toBe(0);
     });
 });

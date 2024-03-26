@@ -1,10 +1,7 @@
 {
     "compilerOptions": {
         // Enable latest features
-        "lib": [
-            "ESNext",
-            "esnext.decorators"
-        ],
+        "lib": ["ESNext", "esnext.decorators"],
         "target": "ES2022",
         "module": "ES2022",
         "moduleDetection": "force",
@@ -24,14 +21,7 @@
         // Build
         "declaration": true,
         "declarationMap": true,
-        "esModuleInterop": true,
+        "esModuleInterop": true
     },
-    "exclude": [
-        "node_modules"
-    ],
-    "include": [
-        "./src/**/*.ts",
-        "./tests/**/*.ts",
-        "./examples/**/*.ts",
-    ]
+    "include": ["./src/**/*.ts", "./tests/**/*.ts", "./examples/**/*.ts"]
 }

@@ -2,25 +2,30 @@
 
 ## Table of Contents
 
-- [Contributing to Futen](#contributing-to-futen)
-  - [Table of Contents](#table-of-contents)
-  - [Suggesting Features](#suggesting-features)
-    - [Before Submitting a Feature](#before-submitting-a-feature)
-  - [Styleguides](#styleguides)
-    - [Commit Messages](#commit-messages)
+-   [Contributing to Futen](#contributing-to-futen)
+    -   [Table of Contents](#table-of-contents)
+    -   [Suggesting Features](#suggesting-features)
+        -   [Before Submitting a Feature](#before-submitting-a-feature)
+    -   [Styleguides](#styleguides)
+        -   [Commit Messages](#commit-messages)
 
 ## Suggesting Features
 
 This section guides you through submitting an enhancement suggestion for Futen, **including completely new features and minor improvements to existing functionality**. Following these guidelines will help other maintainers to understand your suggestion and find related suggestions.
 
 ### Before Submitting a Feature
-* * *
-- Make sure that you are starting from the latest `build/develop`.
-- Read the [documentation](./README.md#documentation) carefully and find out if the functionality is already covered, maybe by an individual configuration.
+
+---
+
+-   Make sure that you are starting from the latest `build/develop`.
+-   Read the [documentation](./README.md#documentation) carefully and find out if the functionality is already covered, maybe by an individual configuration.
 
 ## Styleguides
+
 ### Commit Messages
-* * *
+
+---
+
 Read [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/#summary) [Full Specifications](https://www.conventionalcommits.org/en/v1.0.0/#specification) for more information on the conventions to follow while committing.
 
 The commit contains the following structural elements, to communicate intent to the other maintainers of the project:

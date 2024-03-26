@@ -41,24 +41,34 @@ describe('REST BASIC ROUTING EXAMPLE', () => {
     const { port } = server.instance;
 
     test('should return basic response', async () => {
-        const response = await server.instance.fetch(new Request(`http://localhost:${port}/`));
+        const response = await server.instance.fetch(
+            new Request(`http://localhost:${port}/`)
+        );
         const body = await response.json();
         expect(body).toEqual({ hello: 'world' });
     });
 
     test('should return 404', async () => {
-        const response = await server.instance.fetch(new Request(`http://localhost:${port}/not-found`));
+        const response = await server.instance.fetch(
+            new Request(`http://localhost:${port}/not-found`)
+        );
         expect(response.status).toBe(404);
     });
 
     test('should return response with params', async () => {
-        const response = await server.instance.fetch(new Request(`http://localhost:${port}/test/123`));
+        const response = await server.instance.fetch(
+            new Request(`http://localhost:${port}/test/123`)
+        );
         const body = await response.json();
         expect(body).toEqual({ id: '123' });
     });
 
     test('should return 405 with wrong method', async () => {
-        const response = await server.instance.fetch(new Request(`http://localhost:${port}/test/123`, { method: 'DELETE' }));
+        const response = await server.instance.fetch(
+            new Request(`http://localhost:${port}/test/123`, {
+                method: 'DELETE'
+            })
+        );
         expect(response.status).toBe(405);
     });
 });
@@ -119,7 +129,10 @@ describe('REST RESPONSES', () => {
         },
         '/user/0123456789/posts': {
             code: 200,
-            body: { path: '/user/:userID/posts', params: { userID: '0123456789' } }
+            body: {
+                path: '/user/:userID/posts',
+                params: { userID: '0123456789' }
+            }
         },
         '/static/js/common.js': {
             code: 200,
@@ -155,11 +168,17 @@ describe('REST RESPONSES', () => {
         '/api/login': { code: 200, body: { path: '/api/login', params: {} } },
         '/api/postings/details/misc/many/nodes/deep': {
             code: 200,
-            body: { path: '/api/postings/details/misc/many/nodes/deep', params: {} }
+            body: {
+                path: '/api/postings/details/misc/many/nodes/deep',
+                params: {}
+            }
         },
         '/api/posts/0123456789': {
             code: 200,
-            body: { path: '/api/posts/:postID', params: { postID: '0123456789' } }
+            body: {
+                path: '/api/posts/:postID',
+                params: { postID: '0123456789' }
+            }
         },
         '/api/posts/0123456789/comments': {
             code: 200,
@@ -235,10 +254,12 @@ describe('REST RESPONSES', () => {
 
     const { port } = server.instance;
 
-    for (const [url, { code, body } ] of Object.entries(testURLs)) {
+    for (const [url, { code, body }] of Object.entries(testURLs)) {
         let response: Response;
         test(`should return ${code} for ${url}`, async () => {
-            response = await server.instance.fetch(new Request(`http://localhost:${port}${url}`));
+            response = await server.instance.fetch(
+                new Request(`http://localhost:${port}${url}`)
+            );
             expect(response.status).toBe(code);
         });
 

@@ -9,7 +9,7 @@ bake.ts
 
 CONTRIBUTING.md
 tsconfig.json
-.eslintrc.json
+.eslintrc.js
 .prettierrc
 .vscode
 .github
