@@ -60,18 +60,7 @@ export function routesFrom(
         if (endpoint.endsWith('/')) endpoint = endpoint.slice(0, -1);
         if (Handler instanceof Route) Routes[endpoint + Handler.path] = Handler;
         else if (!Handler.toString().includes('class')) continue;
-        else {
-            const leaf = endpoint.split('/').pop();
-            if (
-                pathname.split('/').pop() !== 'index.ts' &&
-                Handler.name !== leaf
-            ) {
-                throw new Error(
-                    `Route '${endpoint}' from ${pathname} does not match its file name:\n\treceived \x1b[31m- ${Handler.name}\x1b[0m\n\texpected \x1b[32m+ ${leaf}\x1b[0m`
-                );
-            }
-            Routes[endpoint] = decorate(endpoint, Handler, apiResourcesMap);
-        }
+        else Routes[endpoint] = decorate(endpoint, Handler, apiResourcesMap);
     }
     return Routes;
 }
