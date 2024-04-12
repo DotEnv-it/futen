@@ -46,13 +46,9 @@
     },
     "scripts": {
         "bake": "bun bake.ts",
-        "lint:prettier": "prettier --check .",
-        "lint:prettier:fix": "prettier --write .",
         "lint:eslint": "eslint --ext .ts .",
         "lint:eslint:fix": "eslint --ext .ts . --fix",
-        "prelint": "bun lint:prettier",
         "lint": "bun lint:eslint",
-        "prelint:fix": "bun lint:prettier:fix",
         "lint:fix": "bun lint:eslint:fix",
         "release:dry": "bun lint:fix && bun bake && bun test && npm publish --tag next --dry-run"
     }
