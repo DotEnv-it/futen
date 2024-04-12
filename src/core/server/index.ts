@@ -1,6 +1,8 @@
 import Router from '../../router';
 import { HTTPMethod } from '../decorators/http';
 import { WSEvent, webSocketRouteWrapper } from '../decorators/websocket';
+import { runMiddleware } from '../decorators/middleware';
+import type { Middleware } from '../decorators/middleware';
 import type { Server as BunServer, ServeOptions } from 'bun';
 import type {
     FutenWebSocketRouteType,
@@ -31,6 +33,7 @@ function overrideMethods<T, K>(target: T, methods: RouteType, override: K): T {
 }
 
 export class Route<T> {
+    public middleware?: Middleware['middleware'];
     public readonly target: T;
     public readonly path: string;
     public constructor(target: T, path: string, typeOfRoute: 'http' | 'ws') {
@@ -58,20 +61,23 @@ export default class Futen<T> {
     public readonly routes: { [key in keyof T]: Route<T[key]> };
     public readonly instance: BunServer;
 
-    public constructor(routes: T, options?: Partial<ServeOptions>) {
+    public constructor(
+        routes: T,
+        options?: Partial<ServeOptions> & Middleware
+    ) {
         for (const route of Object.values(routes as Record<string, Route<T>>)) {
             const store = this.router.register(route.path);
             store[0] = route;
         }
         this.routes = routes as { [key in keyof T]: Route<T[key]> };
         this.instance = Bun.serve({
-            fetch: this.fetch,
+            fetch: this.fetch(options),
             websocket: webSocketRouteWrapper(),
             ...options
         });
     }
 
-    public get fetch() {
+    public fetch(middleware?: Middleware) {
         return (request: Request, server?: BunServer) => {
             const route = this.router.find(
                 request.url.substring(request.url.indexOf('/', 8))
@@ -80,6 +86,17 @@ export default class Futen<T> {
                 return new Response(`Route not found for ${request.url}`, {
                     status: 404
                 });
+            }
+            const routeStore = route.store[0];
+            if (routeStore.middleware ?? middleware) {
+                const middlewareResponse = runMiddleware(
+                    request,
+                    route.params,
+                    middleware,
+                    routeStore.middleware
+                );
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+                request = middlewareResponse ?? request;
             }
             if (request.headers.get('upgrade') === 'websocket') {
                 if (
@@ -94,7 +111,7 @@ export default class Futen<T> {
                     return new Response('Upgrade failed!', { status: 500 });
                 return new Response(null, { status: 101 });
             }
-            // @ts-expect-error - Element implicitly has an 'any' type because expression of type '"get" | "head" | "post" | "put" | "delete" | "connect" | "options" | "trace" | "patch"' can't be used to index type 'Route<T>'. Property 'get' does not exist on type 'Route<T>'.
+            // @ts-expect-error - Element implicitly has an 'any' type because expression of type 'string' can't be used to index type 'Route<T>'. No index signature with a parameter of type 'string' was found on type 'Route<T>'.ts(7053)
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call
             return route.store[0][request.method.toLowerCase()](
                 request,
