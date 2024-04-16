@@ -95,8 +95,7 @@ export default class Futen<T> {
                     middleware,
                     routeStore.middleware
                 );
-                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-                request = middlewareResponse ?? request;
+                request = middlewareResponse;
             }
             if (request.headers.get('upgrade') === 'websocket') {
                 if (
