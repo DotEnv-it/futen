@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'bun:test';
-import Futen, { middleware, route } from '../dist/index.mjs';
+import Futen, { middleware, route, routesFrom } from '../dist/index.mjs';
 
 describe('MIDDLEWARE', () => {
     test('runs middleware on server scope', async () => {
@@ -304,4 +304,15 @@ describe('MIDDLEWARE', () => {
 
         server.instance.stop();
     })
+
+    test('runs middleware from file route', async () => {
+        const server = new Futen(routesFrom('../examples'), { port: 0 });
+        const response = await server.instance.fetch(
+            new Request(`http://localhost:${server.instance.port}/fileRoute`)
+        );
+        expect(await response.json()).toEqual({ hello: 'world' });
+        expect(response.headers.get('x-middleware')).toBe('true');
+
+        server.instance.stop();
+    });
 });

@@ -84,7 +84,7 @@ export function middleware(middlewareCB: Middleware['middleware']) {
         if (!(target instanceof Route)) {
             // This should never happen
             throw new Error(
-                'Middleware can only be applied to a class with the route decorator.\n\tMake sure to apply the middleware decorator above the route decorator'
+                'If you are seeing this error, please open an issue on the official repo'
             );
         }
         if (target.middleware === undefined) target.middleware = [];
@@ -99,5 +99,6 @@ export function middleware(middlewareCB: Middleware['middleware']) {
         if (!(middlewareCB instanceof Array)) middlewareCB = [middlewareCB];
 
         target.middleware = middlewareCB.concat(target.middleware);
+        return target;
     };
 }
