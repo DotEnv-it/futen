@@ -35,7 +35,7 @@ function overrideMethods<T, K>(target: T, methods: RouteType, override: K): T {
 export class Route<T> {
     public middleware?: Middleware['middleware'];
     public readonly target: T;
-    public readonly path: string;
+    public path: string;
     public constructor(target: T, path: string, typeOfRoute: 'http' | 'ws') {
         if (typeof target !== 'function') {
             throw new Error(

@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-invalid-void-type */
 import { Route } from '../server';
+import { route } from './http';
 
 function escapeRegex(str: string): string {
     return str.replace(/([.*+?^=!:${}()|[\]/\\])/g, '\\$1');
@@ -79,17 +80,17 @@ export function middleware(middlewareCB: Middleware['middleware']) {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Context is a mandatory parameter but is always undefined in this case
         _context: ClassDecoratorContext<T>
     ) {
+        if (!(target instanceof Route)) target = route('')(target); // Used for file router
         if (!(target instanceof Route)) {
+            // This should never happen
             throw new Error(
                 'Middleware can only be applied to a class with the route decorator.\n\tMake sure to apply the middleware decorator above the route decorator'
             );
         }
         if (target.middleware === undefined) target.middleware = [];
 
-        if (!(target.middleware instanceof Array)) {
-            // How did we get here? Open an issue tyty
-            target.middleware = [target.middleware];
-        }
+        if (!(target.middleware instanceof Array)) target.middleware = [target.middleware];
+
         if (middlewareCB === undefined) {
             throw new Error(
                 'Middleware cannot be undefined, did you forget to pass a middleware function?'

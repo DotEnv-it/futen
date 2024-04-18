@@ -58,8 +58,10 @@ export function routesFrom(
 
         if (Handler === undefined) continue;
         if (endpoint.endsWith('/')) endpoint = endpoint.slice(0, -1);
-        if (Handler instanceof Route) Routes[endpoint] = Handler;
-        else if (!Handler.toString().includes('class')) continue;
+        if (Handler instanceof Route) {
+            if (Handler.path === '') Handler.path = endpoint;
+            Routes[endpoint] = Handler;
+        } else if (!Handler.toString().includes('class')) continue;
         else Routes[endpoint] = decorate(endpoint, Handler, apiResourcesMap);
     }
     return Routes;
