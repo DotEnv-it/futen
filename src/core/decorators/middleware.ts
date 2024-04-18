@@ -13,32 +13,31 @@ export function wildcardMatchRegExp(str: string, rule: string): boolean {
 
 export type Middleware = {
     middleware?:
-        | ((request: Request, params: any) => Request | void)
-        | ((request: Request, params: any) => Request | void)[];
+        | ((request: Request | Response, params: any) => Request | Response | void)
+        | ((request: Request | Response, params: any) => Request | Response | void)[];
     middlewarePaths?: string | string[];
 };
 
 function applyMiddleware(
-    request: Request,
+    request: Request | Response,
     params: any,
     appliedMiddleware: Middleware['middleware']
-): Request {
+): Request | Response {
     if (appliedMiddleware === undefined) return request;
     if (!(appliedMiddleware instanceof Array))
         appliedMiddleware = [appliedMiddleware];
-    let requestTmp = request;
+    let tmp = request;
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    for (let i = 0; i < appliedMiddleware.length; i++) requestTmp = appliedMiddleware[i](requestTmp, params) ?? requestTmp;
-
-    return requestTmp;
+    for (let i = 0; i < appliedMiddleware.length; i++) tmp = appliedMiddleware[i](tmp, params) ?? tmp;
+    return tmp;
 }
 
 export function runServerMiddleware(
-    request: Request,
+    request: Request | Response,
     params: any,
     serverMidleware?: Middleware['middleware'],
     middlewarePaths: Middleware['middlewarePaths'] = ['*']
-): Request | undefined {
+): Response | Request | undefined {
     if (serverMidleware === undefined) return;
     if (typeof middlewarePaths === 'string')
         middlewarePaths = [middlewarePaths];
@@ -54,7 +53,7 @@ export function runMiddleware(
     params: any,
     serverMidleware?: Middleware,
     routeMiddleware?: Middleware['middleware']
-): Request {
+): Request | Response {
     let middlewareResponse = runServerMiddleware(
         request,
         params,

@@ -155,4 +155,153 @@ describe('MIDDLEWARE', () => {
 
         server.instance.stop();
     });
+
+    test('runs middleware with response return', async () => {
+        @middleware(() => {
+            return new Response('Hello Middleware');
+        })
+        @route('/')
+        class Index {
+            get(request: Request) {
+                return Response.json(
+                    { hello: 'world' },
+                    { headers: request.headers }
+                );
+            }
+        }
+
+        const server = new Futen({ Index }, { port: 0 });
+
+        const response = await server.instance.fetch(
+            new Request(`http://localhost:${server.instance.port}/`)
+        );
+        expect(await response.text()).toBe('Hello Middleware');
+
+        server.instance.stop();
+    });
+
+    test('runs middleware with multiple response return', async () => {
+        @middleware(() => {
+            return new Response('Hello Middleware');
+        })
+        @middleware((response) => {
+            expect(response instanceof Response).toBe(true);
+            return new Response('Hello Middleware 2');
+        })
+        @route('/')
+        class Index {
+            get(request: Request) {
+                return Response.json(
+                    { hello: 'world' },
+                    { headers: request.headers }
+                );
+            }
+        }
+
+        const server = new Futen({ Index }, { port: 0 });
+
+        const response = await server.instance.fetch(
+            new Request(`http://localhost:${server.instance.port}/`)
+        );
+        expect(await response.text()).toBe('Hello Middleware 2');
+
+        server.instance.stop();
+    });
+
+    test('runs middleware with multiple response return on server scope', async () => {
+        @route('/')
+        class Index {
+            get(request: Request) {
+                return Response.json(
+                    { hello: 'world' },
+                    { headers: request.headers }
+                );
+            }
+        }
+
+        const server = new Futen(
+            { Index },
+            {
+                middleware: [
+                    () => new Response('Hello Middleware'),
+                    () => new Response('Hello Middleware 2')
+                ],
+                port: 0
+            }
+        );
+
+        const response = await server.instance.fetch(
+            new Request(`http://localhost:${server.instance.port}/`)
+        );
+        expect(await response.text()).toBe('Hello Middleware 2');
+
+        server.instance.stop();
+    });
+
+    test('runs middleware with multiple response return on dynamic route', async () => {
+        @middleware((_req, params) => {
+            expect(params.id).toBe('123');
+            return new Response('Hello Middleware');
+        })
+        @middleware((response) => {
+            expect(response instanceof Response).toBe(true);
+            return new Response('Hello Middleware 2');
+        })
+        @route('/:id')
+        class Index {
+            get(request: Request) {
+                return Response.json(
+                    { hello: 'world' },
+                    { headers: request.headers }
+                );
+            }
+        }
+
+        const server = new Futen({ Index }, { port: 0 });
+
+        const response = await server.instance.fetch(
+            new Request(`http://localhost:${server.instance.port}/123`)
+        );
+        expect(await response.text()).toBe('Hello Middleware 2');
+
+        server.instance.stop();
+    });
+
+    test('runs middleware with multiple response return on dynamic route on server and route scope', async () => {
+        @middleware((response, params) => {
+            expect(params.id).toBe('123');
+            expect(response instanceof Response).toBe(true);
+            return new Response('Hello Middleware 2');
+        })
+        @route('/:id/test')
+        class Index {
+            get(request: Request) {
+                return Response.json(
+                    { hello: 'world' },
+                    { headers: request.headers }
+                );
+            }
+        }
+
+        const server = new Futen(
+            { Index },
+            {
+                middleware: [
+                    (_req, params) => {
+                        expect(params.id).toBe('123');
+                        return new Response('Hello Middleware');
+                    }
+                ],
+                middlewarePaths: ['/*/test'],
+                port: 0
+            }
+        );
+
+        const response = await server.instance.fetch(
+            new Request(`http://localhost:${server.instance.port}/123/test`)
+        );
+        expect(await response.text()).toBe('Hello Middleware 2');
+
+        server.instance.stop();
+    })
 });

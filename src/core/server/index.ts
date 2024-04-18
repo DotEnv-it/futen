@@ -89,12 +89,14 @@ export default class Futen<T> {
             }
             const routeStore = route.store[0];
             if (routeStore.middleware ?? middleware) {
-                request = runMiddleware(
+                const mw = runMiddleware(
                     request,
                     route.params,
                     middleware,
                     routeStore.middleware
                 );
+                if (mw instanceof Response) return mw;
+                request = mw;
             }
             if (request.headers.get('upgrade') === 'websocket') {
                 if (
