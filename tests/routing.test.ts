@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-loop-func */
-/* eslint-disable @typescript-eslint/naming-convention */
 import Futen, { route } from '../dist/index.mjs';
 import Router from '../dist/router/index.mjs';
 import { describe, test, expect } from 'bun:test';
