@@ -74,7 +74,7 @@ export function runMiddleware(
     return middlewareResponse;
 }
 
-export function middleware(middlewareCB: Middleware['middleware']) {
+export function middleware(callback: Middleware['middleware']) {
     return function <T extends new (...args: any[]) => any>(
         target: T,
         // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Context is a mandatory parameter but is always undefined in this case
@@ -91,14 +91,14 @@ export function middleware(middlewareCB: Middleware['middleware']) {
 
         if (!(target.middleware instanceof Array)) target.middleware = [target.middleware];
 
-        if (middlewareCB === undefined) {
+        if (callback === undefined) {
             throw new Error(
                 'Middleware cannot be undefined, did you forget to pass a middleware function?'
             );
         }
-        if (!(middlewareCB instanceof Array)) middlewareCB = [middlewareCB];
+        if (!(callback instanceof Array)) callback = [callback];
 
-        target.middleware = middlewareCB.concat(target.middleware);
+        target.middleware = callback.concat(target.middleware);
         return target;
     };
 }
