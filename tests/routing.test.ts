@@ -254,7 +254,7 @@ describe('REST RESPONSES', () => {
 
     for (const [url, { code, body }] of Object.entries(testURLs)) {
         let response: Response;
-        test(`should return ${code} for ${url}`, async () => {
+        test(`${code} for ${url}`, async () => {
             response = await server.instance.fetch(
                 new Request(`http://localhost:${port}${url}`)
             );
@@ -262,7 +262,7 @@ describe('REST RESPONSES', () => {
         });
 
         if (code === 200) {
-            test(`should return ${JSON.stringify(body)} for ${url}`, async () => {
+            test(`${JSON.stringify(body)} for ${url}`, async () => {
                 const responseBody = await response.json();
                 expect(responseBody).toEqual(body);
             });
@@ -332,7 +332,7 @@ describe('SIMPLE ROUTING', () => {
     for (const path of routes) router.register(path);
 
     for (const [url, expected] of Object.entries(testURLs)) {
-        test(`should return ${expected ? 'found' : 'not found'} for ${url}`, () => {
+        test(`${expected ? 'found' : 'not found'} for ${url}`, () => {
             expect(router.find(url) !== null).toBe(expected);
         });
     }
