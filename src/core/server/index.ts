@@ -2,7 +2,7 @@ import Router from '../../router';
 import { HTTPMethod } from '../decorators/http';
 import { WSEvent, webSocketRouteWrapper } from '../decorators/websocket';
 import { runMiddleware } from '../decorators/middleware';
-import type { Middleware } from '../decorators/middleware';
+import type { Middleware, MiddlewareRelation } from '../decorators/middleware';
 import type { Server as BunServer, ServeOptions } from 'bun';
 import type {
     FutenWebSocketRouteType,
@@ -33,7 +33,7 @@ function overrideMethods<T, K>(target: T, methods: RouteType, override: K): T {
 }
 
 export class Route<T> {
-    public middleware?: Middleware['middleware'];
+    public middleware?: Middleware;
     public readonly target: T;
     public path: string;
     public constructor(target: T, path: string, typeOfRoute: 'http' | 'ws') {
@@ -63,7 +63,7 @@ export default class Futen<T> {
 
     public constructor(
         routes: T,
-        options?: Partial<ServeOptions> & Middleware
+        options?: Partial<ServeOptions> & MiddlewareRelation
     ) {
         for (const route of Object.values(routes as Record<string, Route<T>>)) {
             const store = this.router.register(route.path);
@@ -77,7 +77,7 @@ export default class Futen<T> {
         });
     }
 
-    public fetch(middleware?: Middleware) {
+    public fetch(serverMiddleware?: MiddlewareRelation) {
         return (request: Request, server?: BunServer) => {
             const route = this.router.find(
                 request.url.substring(request.url.indexOf('/', 8))
@@ -88,11 +88,11 @@ export default class Futen<T> {
                 });
             }
             const routeStore = route.store[0];
-            if (routeStore.middleware ?? middleware) {
+            if (routeStore.middleware ?? serverMiddleware) {
                 const mw = runMiddleware(
                     request,
                     route.params,
-                    middleware,
+                    serverMiddleware?.middleware,
                     routeStore.middleware
                 );
                 if (mw instanceof Response) return mw;
