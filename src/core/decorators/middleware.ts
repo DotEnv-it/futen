@@ -12,17 +12,17 @@ export function wildcardMatchRegExp(str: string, rule: string): boolean {
     );
 }
 
-export type Middleware = {
-    middleware?:
-        | ((request: Request | Response, params: any) => Request | Response | void)
-        | ((request: Request | Response, params: any) => Request | Response | void)[];
-    middlewarePaths?: string | string[];
-};
+export type Middleware =
+  | ((request: Request | Response, params: any) => Request | Response | void)
+  | ((request: Request | Response, params: any) => Request | Response | void)[]
+  | undefined;
+
+export type MiddlewareRelation = { middleware?: Record<string, Middleware> };
 
 function applyMiddleware(
     request: Request | Response,
     params: any,
-    appliedMiddleware: Middleware['middleware']
+    appliedMiddleware: Middleware
 ): Request | Response {
     if (appliedMiddleware === undefined) return request;
     if (!(appliedMiddleware instanceof Array))
@@ -36,31 +36,29 @@ function applyMiddleware(
 export function runServerMiddleware(
     request: Request | Response,
     params: any,
-    serverMidleware?: Middleware['middleware'],
-    middlewarePaths: Middleware['middlewarePaths'] = ['*']
+    serverMiddleware?: MiddlewareRelation['middleware']
 ): Response | Request | undefined {
-    if (serverMidleware === undefined) return;
-    if (typeof middlewarePaths === 'string')
-        middlewarePaths = [middlewarePaths];
+    if (serverMiddleware === undefined) return;
+    const middlewarePaths = Object.keys(serverMiddleware);
     const path = new URL(request.url).pathname;
     for (let i = 0; i < middlewarePaths.length; i++) {
-        if (wildcardMatchRegExp(path, middlewarePaths[i]))
-            return applyMiddleware(request, params, serverMidleware);
+        if (wildcardMatchRegExp(path, middlewarePaths[i])) {
+            return applyMiddleware(
+                request,
+                params,
+                serverMiddleware[middlewarePaths[i]]
+            );
+        }
     }
 }
 
 export function runMiddleware(
     request: Request,
     params: any,
-    serverMidleware?: Middleware,
-    routeMiddleware?: Middleware['middleware']
+    serverMiddleware?: MiddlewareRelation['middleware'],
+    routeMiddleware?: Middleware
 ): Request | Response {
-    let middlewareResponse = runServerMiddleware(
-        request,
-        params,
-        serverMidleware?.middleware,
-        serverMidleware?.middlewarePaths
-    ) ?? request;
+    let middlewareResponse = runServerMiddleware(request, params, serverMiddleware) ?? request;
     if (routeMiddleware !== undefined) {
         for (let i = 0; i < routeMiddleware.length; i++) {
             middlewareResponse = applyMiddleware(
@@ -74,7 +72,7 @@ export function runMiddleware(
     return middlewareResponse;
 }
 
-export function middleware(middlewareCB: Middleware['middleware']) {
+export function middleware(callback: Middleware) {
     return function <T extends new (...args: any[]) => any>(
         target: T,
         // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Context is a mandatory parameter but is always undefined in this case
@@ -88,17 +86,15 @@ export function middleware(middlewareCB: Middleware['middleware']) {
             );
         }
         if (target.middleware === undefined) target.middleware = [];
-
-        if (!(target.middleware instanceof Array)) target.middleware = [target.middleware];
-
-        if (middlewareCB === undefined) {
+        if (!(target.middleware instanceof Array))
+            target.middleware = [target.middleware];
+        if (callback === undefined) {
             throw new Error(
                 'Middleware cannot be undefined, did you forget to pass a middleware function?'
             );
         }
-        if (!(middlewareCB instanceof Array)) middlewareCB = [middlewareCB];
-
-        target.middleware = middlewareCB.concat(target.middleware);
+        if (!(callback instanceof Array)) callback = [callback];
+        target.middleware = callback.concat(target.middleware);
         return target;
     };
 }
