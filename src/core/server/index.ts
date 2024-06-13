@@ -77,6 +77,11 @@ export default class Futen<T> {
         });
     }
 
+    public plug<A>(plugin: (server: this, ...args: A[]) => void, ...args: A[]): this {
+        plugin(this, ...args);
+        return this;
+    }
+
     public fetch(serverMiddleware?: MiddlewareRelation) {
         return (request: Request, server?: BunServer) => {
             const route = this.router.find(
