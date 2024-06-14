@@ -1,21 +1,37 @@
 import Futen, { route } from '../dist/index.mjs';
 import { describe, test, expect } from 'bun:test';
 
+type HTTPMethods = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'OPTIONS' | 'PATCH';
+type Concat<T extends string, U extends string> = `${T},${U}` | `${U},${T}` | `${T}, ${U}` | `${U}, ${T}` | T | U;
+type Combine<T extends string, U extends string = T> = T extends any ? Concat<T, Combine<Exclude<U, T>>> : never;
+type MethodsList = Combine<HTTPMethods>;
+
+/**
+ * https://developer.mozilla.org/en-US/docs/Glossary/CORS#cors_headers
+ */
 type CORSHeaders = Partial<{
     'Access-Control-Allow-Origin': string;
-    'Access-Control-Allow-Methods': string;
+    'Access-Control-Allow-Credentials': string;
     'Access-Control-Allow-Headers': string;
+    'Access-Control-Allow-Methods': MethodsList | '*';
+    'Access-Control-Expose-Headers': string;
+    'Access-Control-Max-Age': string;
+    'Access-Control-Request-Headers': string;
+    'Access-Control-Request-Method': string;
+    Origin: string;
+    'Timing-Allow-Origin': string;
 }>;
-
-function CORS(server: Futen<any>, policies: CORSHeaders) {
-    async function CORSFetch(request: Request) {
-        const response = await server.fetch()(request, server.instance);
-        for (const [key, value] of Object.entries(policies)) {
-            response.headers.set(key, value);
+export function CORS(server: Futen<Record<string, unknown>>, policies: CORSHeaders): void {
+    server.instance.fetch = async function (request: Request): Promise<Response> {
+        if (request.method === 'OPTIONS') {
+            return new Response('departed', {
+                headers: policies
+            });
         }
+        const response = (await server.fetch()(request)) as Response;
+        for (const [key, value] of Object.entries(policies)) response.headers.set(key, value);
         return response;
     };
-    server.instance.fetch = CORSFetch;
 }
 
 describe('PLUGINS', () => {
@@ -55,7 +71,7 @@ describe('PLUGINS', () => {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': '*',
         'Access-Control-Allow-Headers': '*'
-    });
+    } as const);
 
     const { port } = server.instance;
     test('should return routes', async () => {

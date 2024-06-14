@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/bin/bash
 . "$(dirname -- "$0")/_/husky.sh"
 
 ### Mandatory to make commits, otherwise PR will be rejected
