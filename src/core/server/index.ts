@@ -77,7 +77,10 @@ export default class Futen<T> {
         });
     }
 
-    public plug<A>(plugin: (server: this, ...args: A[]) => void, ...args: A[]): this {
+    public plug<B extends unknown[], A extends (server: this, ...args: B) => void>(
+        plugin: A,
+        ...args: B
+    ): this {
         plugin(this, ...args);
         return this;
     }
@@ -112,8 +115,7 @@ export default class Futen<T> {
                             params: route.params
                         } satisfies WebSocketDataType
                     })
-                )
-                    return new Response('Upgrade failed!', { status: 500 });
+                ) return new Response('Upgrade failed!', { status: 500 });
                 return new Response(null, { status: 101 });
             }
             // @ts-expect-error - Element implicitly has an 'any' type because expression of type 'string' can't be used to index type 'Route<T>'. No index signature with a parameter of type 'string' was found on type 'Route<T>'.ts(7053)

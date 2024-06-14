@@ -22,7 +22,6 @@ describe('PLUGINS', () => {
     @route('/')
     class Home {
         public get(): Response {
-            // eslint-disable-next-line @typescript-eslint/no-use-before-define
             const routes = Object.entries(server.routes).map(
                 ([routeClass, handler]) => {
                     return {
