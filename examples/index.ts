@@ -20,7 +20,7 @@ class WSController {
     }
 }
 
-const server = new Futen(
+export const server = new Futen(
     {
         IndexController,
         WSController
@@ -29,5 +29,3 @@ const server = new Futen(
         port: 3001
     }
 );
-
-console.log(`Server running on port ${server.instance.port}`);

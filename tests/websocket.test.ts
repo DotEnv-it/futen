@@ -27,6 +27,7 @@ describe('WebSocket', () => {
             params: { id: string; id2: string }
         ): number {
             if (message === 'Close me, please!') {
+                // @ts-expect-error close method does indeed exist on this class
                 return wsServer.routes.WebSocket2.close(
                     websocket,
                     1000,
