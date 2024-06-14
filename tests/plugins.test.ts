@@ -59,7 +59,7 @@ describe('PLUGINS', () => {
 
     const { port } = server.instance;
     test('should return routes', async () => {
-        const response = await server.instance.fetch(
+        const response = await fetch(
             new Request(`http://localhost:${port}/`)
         );
         const body = await response.json();
@@ -81,7 +81,7 @@ describe('PLUGINS', () => {
     });
 
     test('should return request body', async () => {
-        const response = await server.instance.fetch(
+        const response = await fetch(
             new Request(`http://localhost:${port}/test`, {
                 method: 'post',
                 body: JSON.stringify({ hello: 'world' })
@@ -95,7 +95,7 @@ describe('PLUGINS', () => {
     });
 
     test('should return CORS headers', async () => {
-        const response = await server.instance.fetch(
+        const response = await fetch(
             new Request(`http://localhost:${port}/`)
         );
         expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*');

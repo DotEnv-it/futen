@@ -82,6 +82,7 @@ export default class Futen<T> {
         ...args: B
     ): this {
         plugin(this, ...args);
+        this.instance.reload(this.instance);
         return this;
     }
 
