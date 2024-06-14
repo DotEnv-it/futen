@@ -9,7 +9,6 @@ type CORSHeaders = Partial<{
 
 function CORS(server: Futen<any>, policies: CORSHeaders) {
     async function CORSFetch(request: Request) {
-        console.log('fetching');
         const response = await server.fetch()(request, server.instance);
         for (const [key, value] of Object.entries(policies)) {
             response.headers.set(key, value);
