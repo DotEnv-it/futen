@@ -11,17 +11,17 @@ export function defaultHTTPHandler<P extends string>(
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/naming-convention, @typescript-eslint/explicit-function-return-type
-export function HTTPMethods<T extends string>(_path?: T) {
+export function HTTPMethods<P extends string>(_path?: P) {
     return {
-        get: defaultHTTPHandler<T>,
-        head: defaultHTTPHandler<T>,
-        post: defaultHTTPHandler<T>,
-        put: defaultHTTPHandler<T>,
-        delete: defaultHTTPHandler<T>,
-        connect: defaultHTTPHandler<T>,
-        options: defaultHTTPHandler<T>,
-        trace: defaultHTTPHandler<T>,
-        patch: defaultHTTPHandler<T>
+        get: defaultHTTPHandler<P>,
+        head: defaultHTTPHandler<P>,
+        post: defaultHTTPHandler<P>,
+        put: defaultHTTPHandler<P>,
+        delete: defaultHTTPHandler<P>,
+        connect: defaultHTTPHandler<P>,
+        options: defaultHTTPHandler<P>,
+        trace: defaultHTTPHandler<P>,
+        patch: defaultHTTPHandler<P>
     };
 }
 export type HTTPMethod<P extends string> = ReturnType<typeof HTTPMethods<P>>;
