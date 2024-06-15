@@ -3,7 +3,7 @@ import { describe, test, expect } from 'bun:test';
 
 type HTTPMethods = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'OPTIONS' | 'PATCH';
 type Concat<T extends string, U extends string> = `${T},${U}` | `${U},${T}` | `${T}, ${U}` | `${U}, ${T}` | T | U;
-type Combine<T extends string, U extends string = T> = T extends any ? Concat<T, Combine<Exclude<U, T>>> : never;
+type Combine<T extends string, U extends string = T> = T extends string ? Concat<T, Combine<Exclude<U, T>>> : never;
 type MethodsList = Combine<HTTPMethods>;
 
 /**
@@ -11,7 +11,7 @@ type MethodsList = Combine<HTTPMethods>;
  */
 type CORSHeaders = Partial<{
     'Access-Control-Allow-Origin': string;
-    'Access-Control-Allow-Credentials': string;
+    'Access-Control-Allow-Credentials': 'true';
     'Access-Control-Allow-Headers': string;
     'Access-Control-Allow-Methods': MethodsList | '*';
     'Access-Control-Expose-Headers': string;
@@ -21,7 +21,7 @@ type CORSHeaders = Partial<{
     Origin: string;
     'Timing-Allow-Origin': string;
 }>;
-export function CORS(server: Futen<Record<string, unknown>>, policies: CORSHeaders): void {
+export function CORS<S extends Futen>(server: S, policies: CORSHeaders): void {
     server.instance.fetch = async function (request: Request): Promise<Response> {
         if (request.method === 'OPTIONS') {
             return new Response('departed', {
@@ -52,12 +52,13 @@ describe('PLUGINS', () => {
         }
     }
 
-    @route('/test')
-    class Test {
-        public async post(request: Request): Promise<Response> {
-            return Response.json({ object: await request.json() });
+    const Test = route('/test')(
+        class {
+            public async post(request: Request): Promise<Response> {
+                return Response.json({ object: await request.json() });
+            }
         }
-    }
+    )
 
     const server = new Futen(
         {

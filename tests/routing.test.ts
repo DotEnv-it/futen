@@ -1,7 +1,6 @@
 import Futen, { route } from '../dist/index.mjs';
 import Router from '../dist/router/index.mjs';
 import { describe, test, expect } from 'bun:test';
-import type { FutenHTTPRoute } from '../dist/index.mjs';
 
 describe('REST BASIC ROUTING EXAMPLE', () => {
     @route('/')
@@ -71,15 +70,13 @@ describe('REST BASIC ROUTING EXAMPLE', () => {
     });
 });
 
-function create(path: string): FutenHTTPRoute {
+function create<P extends string>(path: P) {
     @route(path)
     class Route {
         public get(_request: Request, params: any): Response {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             return Response.json({ path, params });
         }
     }
-    // @ts-expect-error - This is valid
     return Route;
 }
 
@@ -107,7 +104,8 @@ describe('REST RESPONSES', () => {
         '/medium/length/',
         '/very/very/long/long/route/route/path',
         '/v:version/api/login',
-        '/user/v:version/:userID'
+        '/user/v:version/:userID',
+        '/test/:param1/v:param2/*'
     ];
 
     const testURLs = {
@@ -234,6 +232,17 @@ describe('REST RESPONSES', () => {
             body: {
                 path: '/user/v:version/:userID',
                 params: { version: '1', userID: '0123456789' }
+            }
+        },
+        '/test/1/v2/3/4': {
+            code: 200,
+            body: {
+                path: '/test/:param1/v:param2/*',
+                params: {
+                    param1: '1',
+                    param2: '2',
+                    $: '3/4'
+                }
             }
         }
     };

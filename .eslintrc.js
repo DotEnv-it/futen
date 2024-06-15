@@ -5,7 +5,8 @@ module.exports = {
         '*.json',
         'node_modules/**/*',
         'bake.ts',
-        'tests/**/*'
+        'tests/**/*',
+        'dist/**/*',
     ],
     root: true,
     parser: '@typescript-eslint/parser',
