@@ -9,52 +9,52 @@ export type WebSocketDataType<P extends string, T = unknown> = {
 };
 
 // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-unused-vars, @typescript-eslint/explicit-function-return-type
-export function WSEvents<T extends string>(_path?: T) {
+export function WSEvents<P extends string>(_path?: P) {
     return {
         /* eslint-disable @typescript-eslint/no-unused-vars */
         message: (
-            _ws: ServerWebSocket<WebSocketDataType<T>>,
+            _ws: ServerWebSocket<WebSocketDataType<P>>,
             _message: string | ArrayBuffer | Uint8Array,
-            _params?: RouteParams<T>
+            _params?: RouteParams<P>
         ): void => {
             return;
         },
         open: (
-            _ws: ServerWebSocket<WebSocketDataType<T>>,
-            _params?: RouteParams<T>
+            _ws: ServerWebSocket<WebSocketDataType<P>>,
+            _params?: RouteParams<P>
         ) => {
             return;
         },
         close: (
-            _ws: ServerWebSocket<WebSocketDataType<T>>,
+            _ws: ServerWebSocket<WebSocketDataType<P>>,
             _code: number,
             _reason: string,
-            _params?: RouteParams<T>
+            _params?: RouteParams<P>
         ) => {
             return;
         },
         drain: (
-            _ws: ServerWebSocket<WebSocketDataType<T>>,
-            _params?: RouteParams<T>
+            _ws: ServerWebSocket<WebSocketDataType<P>>,
+            _params?: RouteParams<P>
         ) => {
             return;
         },
         ping: (
-            _ws: ServerWebSocket<WebSocketDataType<T>>,
+            _ws: ServerWebSocket<WebSocketDataType<P>>,
             _data: Buffer,
-            _params?: RouteParams<T>
+            _params?: RouteParams<P>
         ) => {
             return;
         },
         pong: (
-            _ws: ServerWebSocket<WebSocketDataType<T>>,
+            _ws: ServerWebSocket<WebSocketDataType<P>>,
             _data: Buffer,
-            _params?: RouteParams<T>
+            _params?: RouteParams<P>
         ) => {
             return;
         }
         /* eslint-enable @typescript-eslint/no-unused-vars */
-    } satisfies WebSocketServeOptions<WebSocketDataType<T>>['websocket'];
+    } satisfies WebSocketServeOptions<WebSocketDataType<P>>['websocket'];
 }
 
 export type WSEvent<P extends string = string> = ReturnType<typeof WSEvents<P>>;
