@@ -1,4 +1,4 @@
-import Futen, { route } from '../dist/index.mjs';
+import Futen, { Route, route } from '../dist/index.mjs';
 import { describe, test, expect } from 'bun:test';
 
 type HTTPMethods = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'OPTIONS' | 'PATCH';
@@ -32,6 +32,33 @@ export function CORS<S extends Futen>(server: S, policies: CORSHeaders): void {
         for (const [key, value] of Object.entries(policies)) response.headers.set(key, value);
         return response;
     };
+}
+
+function Swagger<S extends Futen>(server: S, path = '/swagger.json'): void {
+    const SwaggerRoute = route(path)(
+        class {
+            public get(): Response {
+                const routes = Object.entries(server.routes).map(
+                    ([routeClass, handler]) => {
+                        return {
+                            class: routeClass,
+                            methods: Object.values(handler).filter((property) => {
+                                if (typeof property !== 'function') return false;
+                                return ['get', 'head', 'post', 'put', 'delete', 'connect', 'options', 'trace', 'patch'].includes(property.name);
+                            }).map((method) => method.name.toLowerCase()) as HTTPMethods[],
+                            path: handler.path
+                        };
+                    }
+                );
+                return Response.json({
+                    routes
+                });
+            }
+        }
+    );
+
+    const swagger = server.router.register(path)
+    swagger[0] = SwaggerRoute as Route<any, typeof path>;
 }
 
 describe('PLUGINS', () => {
@@ -72,7 +99,7 @@ describe('PLUGINS', () => {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': '*',
         'Access-Control-Allow-Headers': '*'
-    } as const);
+    } as const).plug(Swagger);
 
     const { port } = server.instance;
     test('should return routes', async () => {
@@ -115,6 +142,30 @@ describe('PLUGINS', () => {
         const response = await fetch(
             new Request(`http://localhost:${port}/`)
         );
+        expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*');
+        expect(response.headers.get('Access-Control-Allow-Methods')).toBe('*');
+        expect(response.headers.get('Access-Control-Allow-Headers')).toBe('*');
+    });
+
+    test('should return swagger.json', async () => {
+        const response = await fetch(
+            new Request(`http://localhost:${port}/swagger.json`)
+        );
+        const body = await response.json();
+        expect(body).toEqual({
+            routes: [
+                {
+                    class: 'Home',
+                    methods: ['get'],
+                    path: '/'
+                },
+                {
+                    class: 'Test',
+                    methods: ['post'],
+                    path: '/test'
+                }
+            ]
+        });
         expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*');
         expect(response.headers.get('Access-Control-Allow-Methods')).toBe('*');
         expect(response.headers.get('Access-Control-Allow-Headers')).toBe('*');
