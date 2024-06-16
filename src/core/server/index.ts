@@ -38,6 +38,7 @@ export class Route<T, P extends string> {
     public middleware?: Middleware;
     public readonly target: T;
     public path: P;
+    public data?: Record<string, unknown>;
     public constructor(target: T, path: P, typeOfRoute: 'http' | 'ws') {
         if (typeof target !== 'function') {
             throw new Error(

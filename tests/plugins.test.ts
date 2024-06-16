@@ -2,7 +2,7 @@ import Futen, { Route, route } from '../dist/index.mjs';
 import { describe, test, expect } from 'bun:test';
 
 type HTTPMethods = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'OPTIONS' | 'PATCH';
-type Concat<T extends string, U extends string> = `${T},${U}` | `${U},${T}` | `${T}, ${U}` | `${U}, ${T}` | T | U;
+type Concat<T extends string, U extends string> = `${T}, ${U}` | T | U;
 type Combine<T extends string, U extends string = T> = T extends string ? Concat<T, Combine<Exclude<U, T>>> : never;
 type MethodsList = Combine<HTTPMethods>;
 
@@ -29,7 +29,10 @@ export function CORS<S extends Futen>(server: S, policies: CORSHeaders): void {
             });
         }
         const response = (await server.fetch()(request)) as Response;
-        for (const [key, value] of Object.entries(policies)) response.headers.set(key, value);
+        for (const [key, value] of Object.entries(policies)) {
+            if (response.headers.has(key)) continue;
+            response.headers.set(key, value);
+        }
         return response;
     };
 }
@@ -75,6 +78,12 @@ describe('PLUGINS', () => {
             );
             return Response.json({
                 routes
+            }, {
+                headers: {
+                    'Access-Control-Allow-Origin': 'localhost',
+                    'Access-Control-Allow-Methods': 'GET',
+                    'Access-Control-Allow-Headers': 'Content-Type'
+                }
             });
         }
     }
@@ -95,11 +104,13 @@ describe('PLUGINS', () => {
         {
             port: 0
         }
-    ).plug(CORS, {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': '*',
-        'Access-Control-Allow-Headers': '*'
-    } as const).plug(Swagger);
+    )
+        .plug(Swagger)
+        .plug(CORS, {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, DELETE, PUT, PATCH',
+            'Access-Control-Allow-Headers': '*'
+        } as const)
 
     const { port } = server.instance;
     test('should return routes', async () => {
@@ -119,9 +130,9 @@ describe('PLUGINS', () => {
                 }
             ]
         });
-        expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*');
-        expect(response.headers.get('Access-Control-Allow-Methods')).toBe('*');
-        expect(response.headers.get('Access-Control-Allow-Headers')).toBe('*');
+        expect(response.headers.get('Access-Control-Allow-Origin')).toBe('localhost');
+        expect(response.headers.get('Access-Control-Allow-Methods')).toBe('GET');
+        expect(response.headers.get('Access-Control-Allow-Headers')).toBe('Content-Type');
     });
 
     test('should return request body', async () => {
@@ -134,7 +145,7 @@ describe('PLUGINS', () => {
         const body = await response.json();
         expect(body).toEqual({ object: { hello: 'world' } });
         expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*');
-        expect(response.headers.get('Access-Control-Allow-Methods')).toBe('*');
+        expect(response.headers.get('Access-Control-Allow-Methods')).toBe('POST, GET, OPTIONS, DELETE, PUT, PATCH');
         expect(response.headers.get('Access-Control-Allow-Headers')).toBe('*');
     });
 
@@ -142,9 +153,9 @@ describe('PLUGINS', () => {
         const response = await fetch(
             new Request(`http://localhost:${port}/`)
         );
-        expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*');
-        expect(response.headers.get('Access-Control-Allow-Methods')).toBe('*');
-        expect(response.headers.get('Access-Control-Allow-Headers')).toBe('*');
+        expect(response.headers.get('Access-Control-Allow-Origin')).toBe('localhost');
+        expect(response.headers.get('Access-Control-Allow-Methods')).toBe('GET');
+        expect(response.headers.get('Access-Control-Allow-Headers')).toBe('Content-Type');
     });
 
     test('should return swagger.json', async () => {
@@ -167,7 +178,7 @@ describe('PLUGINS', () => {
             ]
         });
         expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*');
-        expect(response.headers.get('Access-Control-Allow-Methods')).toBe('*');
+        expect(response.headers.get('Access-Control-Allow-Methods')).toBe('POST, GET, OPTIONS, DELETE, PUT, PATCH');
         expect(response.headers.get('Access-Control-Allow-Headers')).toBe('*');
     });
 });
