@@ -113,7 +113,7 @@ describe('PLUGINS', () => {
         } as const)
 
     const { port } = server.instance;
-    test('should return routes', async () => {
+    test('should return routes and overriden CORS headers', async () => {
         const response = await fetch(
             new Request(`http://localhost:${port}/`)
         );
@@ -149,7 +149,7 @@ describe('PLUGINS', () => {
         expect(response.headers.get('Access-Control-Allow-Headers')).toBe('*');
     });
 
-    test('should return CORS headers', async () => {
+    test('should return CORS headers from the route', async () => {
         const response = await fetch(
             new Request(`http://localhost:${port}/`)
         );
