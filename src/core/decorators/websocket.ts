@@ -1,68 +1,90 @@
+/* eslint-disable @stylistic/max-len */
 import { Route } from '../server';
+import type { RouteParams } from '../../router';
 import type { ServerWebSocket, WebSocketServeOptions } from 'bun';
 
-export type WebSocketDataType<T = unknown> = {
-    route: FutenWebSocketRouteType<T>;
-    params: Record<string, string>;
+export type WebSocketDataType<P extends string, T = unknown> = {
+    route: FutenWebSocketRouteType<T, P>;
+    params: RouteParams<P>;
 };
 
-export const WSEvent = {
-    /* eslint-disable @typescript-eslint/no-unused-vars */
-    message: (
-        _ws: ServerWebSocket<WebSocketDataType>,
-        _message: string | ArrayBuffer | Uint8Array
-    ) => {
-        return;
-    },
-    open: (_ws: ServerWebSocket<WebSocketDataType>) => {
-        return;
-    },
-    close: (
-        _ws: ServerWebSocket<WebSocketDataType>,
-        _code: number,
-        _reason: string
-    ) => {
-        return;
-    },
-    drain: (_ws: ServerWebSocket<WebSocketDataType>) => {
-        return;
-    },
-    ping: (_ws: ServerWebSocket<WebSocketDataType>, _data: Buffer) => {
-        return;
-    },
-    pong: (_ws: ServerWebSocket<WebSocketDataType>, _data: Buffer) => {
-        return;
-    }
-    /* eslint-enable @typescript-eslint/no-unused-vars */
-} satisfies WebSocketServeOptions<WebSocketDataType>['websocket'];
+// eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-unused-vars, @typescript-eslint/explicit-function-return-type
+export function WSEvents<P extends string>(_path?: P) {
+    return {
+        /* eslint-disable @typescript-eslint/no-unused-vars */
+        message: (
+            _ws: ServerWebSocket<WebSocketDataType<P>>,
+            _message: string | ArrayBuffer | Uint8Array,
+            _params?: RouteParams<P>
+        ): void => {
+            return;
+        },
+        open: (
+            _ws: ServerWebSocket<WebSocketDataType<P>>,
+            _params?: RouteParams<P>
+        ) => {
+            return;
+        },
+        close: (
+            _ws: ServerWebSocket<WebSocketDataType<P>>,
+            _code: number,
+            _reason: string,
+            _params?: RouteParams<P>
+        ) => {
+            return;
+        },
+        drain: (
+            _ws: ServerWebSocket<WebSocketDataType<P>>,
+            _params?: RouteParams<P>
+        ) => {
+            return;
+        },
+        ping: (
+            _ws: ServerWebSocket<WebSocketDataType<P>>,
+            _data: Buffer,
+            _params?: RouteParams<P>
+        ) => {
+            return;
+        },
+        pong: (
+            _ws: ServerWebSocket<WebSocketDataType<P>>,
+            _data: Buffer,
+            _params?: RouteParams<P>
+        ) => {
+            return;
+        }
+        /* eslint-enable @typescript-eslint/no-unused-vars */
+    } satisfies WebSocketServeOptions<WebSocketDataType<P>>['websocket'];
+}
 
-export interface FutenWebSocketRoute extends Partial<typeof WSEvent> {}
-export type FutenWebSocketRouteType<T> = Route<T> &
-    Required<FutenWebSocketRoute>;
+export type WSEvent<P extends string = string> = ReturnType<typeof WSEvents<P>>;
+export interface FutenWebSocketRoute<P extends string> extends Partial<WSEvent<P>> {}
+export type FutenWebSocketRouteType<T, P extends string = string> = Route<T, P> &
+    Required<FutenWebSocketRoute<P>>;
 
-export function ws(path: string) {
+export function ws<P extends string>(path: P) {
     return function <T extends new (...args: any[]) => any>(
         target: T,
         // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Context is a mandatory parameter but is always undefined in this case
         _context?: ClassDecoratorContext<T>
     ) {
-        return new Route(target, path, 'ws') as FutenWebSocketRouteType<T> & T;
+        return new Route(target, path, 'ws') as FutenWebSocketRouteType<T, P> & T;
     };
 }
 
-type WebSocketKey = keyof typeof WSEvent;
+type WebSocketKey = keyof WSEvent;
 type OmitFirstArg<F> = F extends (arg0: any, ...args: infer P) => infer R
     ? (...args: P) => R
     : never;
 type WebSocketEventParameterType<T extends WebSocketKey> = Parameters<
-    OmitFirstArg<(typeof WSEvent)[T]>
+    OmitFirstArg<(WSEvent)[T]>
 >;
 
-export function webSocketRouteWrapper(): typeof WSEvent {
-    const router = {} as typeof WSEvent;
-    for (const event of Object.keys(WSEvent) as WebSocketKey[]) {
+export function webSocketRouteWrapper(): WSEvent {
+    const router = {} as WSEvent;
+    for (const event of Object.keys(WSEvents()) as WebSocketKey[]) {
         router[event] = function (
-            websocket: ServerWebSocket<WebSocketDataType>,
+            websocket: ServerWebSocket<WebSocketDataType<string>>,
             ...eventParameters: WebSocketEventParameterType<typeof event>
         ) {
             websocket.data.route[event](

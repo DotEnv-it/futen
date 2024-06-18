@@ -7,11 +7,11 @@ type apiResourcesMap = {
     http: string[];
 };
 
-function decorate(
-    pathname: string,
+function decorate<P extends string>(
+    pathname: P,
     handler: new () => object,
     apiResourcesMap: apiResourcesMap
-): Route<unknown> {
+): Route<unknown, P> {
     for (let i = 0; i < apiResourcesMap.ws.length; i++) {
         if (new Bun.Glob(apiResourcesMap.ws[i]).match(pathname))
             return ws(pathname)(handler);

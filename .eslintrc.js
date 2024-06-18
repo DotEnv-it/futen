@@ -7,6 +7,8 @@ module.exports = {
         'bake.ts',
         'tests/**/*',
         'examples/**/*',
+        'tests/**/*',
+        'dist/**/*',
     ],
     root: true,
     parser: '@typescript-eslint/parser',

@@ -1,6 +1,6 @@
 import Futen, { ws } from '../dist/index.mjs';
 import { describe, test, expect } from 'bun:test';
-import type { WebSocketDataType } from '../dist/index.mjs';
+import type { FutenWebSocketRoute, WebSocketDataType } from '../dist/index.mjs';
 import type { ServerWebSocket } from 'bun';
 
 describe('WebSocket', () => {
@@ -19,46 +19,47 @@ describe('WebSocket', () => {
         }
     }
 
-    @ws('/websocket2/:id/:id2')
-    class WebSocket2 {
-        public message(
-            websocket: ServerWebSocket<WebSocketDataType>,
-            message: string,
-            params: { id: string; id2: string }
-        ): number {
-            if (message === 'Close me, please!') {
-                // @ts-expect-error close method does indeed exist on this class
-                return wsServer.routes.WebSocket2.close(
-                    websocket,
+    const WebSocket2 = ws('/websocket2/:id/:id2')(
+        class implements FutenWebSocketRoute<'/websocket2/:id/:id2'> {
+            public message(
+                websocket: ServerWebSocket<WebSocketDataType<'/websocket2/:id/:id2'>>,
+                message: string | Uint8Array | ArrayBuffer,
+                params?: { id: string; id2: string }
+            ): number {
+                if (message === 'Close me, please!') {
+                    // @ts-expect-error close method does indeed exist on this class
+                    return wsServer.routes.WebSocket2.close(
+                        websocket,
+                        1000,
+                        `Goodbye, world! from SecondWebSocket with params ${JSON.stringify(params)}`
+                    );
+                }
+                const messageWithParams = `${message} from SecondWebSocket${JSON.stringify(params)}`;
+                return websocket.send(messageWithParams);
+            }
+
+            public close(
+                websocket: ServerWebSocket<WebSocketDataType<'/websocket2/:id/:id2'>>,
+                code: number,
+                message: string,
+                params?: { id: string; id2: string }
+            ): void {
+                expect(code).toBe(1000);
+                websocket.close(
                     1000,
-                    `Goodbye, world! from SecondWebSocket with params ${JSON.stringify(params)}`
+                    `WebSocket closed from SecondWebSocket with code 1000 and message ${message} and params ${JSON.stringify(params)}`
                 );
             }
-            const messageWithParams = `${message} from SecondWebSocket${JSON.stringify(params)}`;
-            return websocket.send(messageWithParams);
-        }
 
-        public close(
-            websocket: ServerWebSocket,
-            code: number,
-            message: string,
-            params: { id: string; id2: string }
-        ): void {
-            expect(code).toBe(1000);
-            websocket.close(
-                1000,
-                `WebSocket closed from SecondWebSocket with code 1000 and message ${message} and params ${JSON.stringify(params)}`
-            );
+            public open(
+                websocket: ServerWebSocket<WebSocketDataType<'/websocket2/:id/:id2'>>,
+                params?: { id: string; id2: string }
+            ): number {
+                const openMessage = `WebSocket opened from SecondWebSocket with params ${JSON.stringify(params)}`;
+                return websocket.send(openMessage);
+            }
         }
-
-        public open(
-            websocket: ServerWebSocket,
-            params: { id: string; id2: string }
-        ): number {
-            const openMessage = `WebSocket opened from SecondWebSocket with params ${JSON.stringify(params)}`;
-            return websocket.send(openMessage);
-        }
-    }
+    )
 
     const wsServer = new Futen(
         {

@@ -1,17 +1,19 @@
 import Router from '../../router';
-import { HTTPMethod } from '../decorators/http';
-import { WSEvent, webSocketRouteWrapper } from '../decorators/websocket';
+import { HTTPMethods } from '../decorators/http';
+import { WSEvents, webSocketRouteWrapper } from '../decorators/websocket';
 import { runMiddleware } from '../decorators/middleware';
+import type { HTTPMethod } from '../decorators/http';
 import type { Middleware, MiddlewareRelation } from '../decorators/middleware';
 import type { Server as BunServer, ServeOptions } from 'bun';
 import type {
     FutenWebSocketRouteType,
+    WSEvent,
     WebSocketDataType
 } from '../decorators/websocket';
 
-type RouteType = typeof HTTPMethod | typeof WSEvent;
+type RouteType<S extends string> = HTTPMethod<S> | WSEvent<S>;
 
-function overrideMethods<T, K>(target: T, methods: RouteType, override: K): T {
+function overrideMethods<T, K, P extends string>(target: T, methods: RouteType<P>, override: K): T {
     for (const method in methods) {
         if (override[method as keyof K] !== undefined) {
             Object.defineProperty(target, method, {
@@ -23,7 +25,7 @@ function overrideMethods<T, K>(target: T, methods: RouteType, override: K): T {
             continue;
         }
         Object.defineProperty(target, method, {
-            value: methods[method as keyof RouteType],
+            value: methods[method as keyof RouteType<P>],
             writable: true,
             enumerable: true,
             configurable: true
@@ -32,11 +34,12 @@ function overrideMethods<T, K>(target: T, methods: RouteType, override: K): T {
     return target;
 }
 
-export class Route<T> {
+export class Route<T, P extends string> {
     public middleware?: Middleware;
     public readonly target: T;
-    public path: string;
-    public constructor(target: T, path: string, typeOfRoute: 'http' | 'ws') {
+    public path: P;
+    public data?: Record<string, unknown>;
+    public constructor(target: T, path: P, typeOfRoute: 'http' | 'ws') {
         if (typeof target !== 'function') {
             throw new Error(
                 'Invalid target, expected a class. Make sure to apply the decorator to a class, not to a method or property.'
@@ -47,41 +50,47 @@ export class Route<T> {
 
         switch (typeOfRoute) {
             case 'http':
-                overrideMethods(this, HTTPMethod, target.prototype);
+                overrideMethods(this, HTTPMethods(path), target.prototype);
                 break;
             case 'ws':
-                overrideMethods(this, WSEvent, target.prototype);
+                overrideMethods(this, WSEvents(path), target.prototype);
                 break;
         }
     }
 }
 
-export default class Futen<T> {
-    public readonly router = new Router<Route<T>>();
-    public readonly routes: { [key in keyof T]: Route<T[key]> };
+export default class Futen<P extends string = string, T = Record<P, unknown>> {
+    public readonly router = new Router<Route<T, P>>();
+    public readonly routes: { [key in keyof T]: Route<T[key], P> };
     public readonly instance: BunServer;
 
     public constructor(
         routes: T,
         options?: Partial<ServeOptions> & MiddlewareRelation
     ) {
-        for (const route of Object.values(routes as Record<string, Route<T>>)) {
+        for (const route of Object.values(routes as Record<string, Route<T, P>>)) {
             const store = this.router.register(route.path);
             store[0] = route;
         }
-        this.routes = routes as { [key in keyof T]: Route<T[key]> };
+        this.routes = routes as { [key in keyof T]: Route<T[key], P> };
         this.instance = Bun.serve({
             fetch: this.fetch(options),
             websocket: webSocketRouteWrapper(),
             ...options
         });
+        // This may seem like a hack, but it's the only way I found to normalize the fetch function
+        // and make it work with the plugin system
+        this.instance.fetch = (request: Request) => {
+            return this.fetch(options)(request, this.instance);
+        };
+        this.instance.reload(this.instance);
     }
 
-    public plug<B extends unknown[], A extends (server: this, ...args: B) => void>(
+    public plug<S extends this, B extends unknown[], A extends (server: S, ...args: B) => void>(
         plugin: A,
         ...args: B
     ): this {
-        plugin(this, ...args);
+        plugin(this as S, ...args);
         this.instance.reload(this.instance);
         return this;
     }
@@ -112,9 +121,9 @@ export default class Futen<T> {
                     server !== undefined &&
                     !server.upgrade(request, {
                         data: {
-                            route: route.store[0] as FutenWebSocketRouteType<T>,
+                            route: route.store[0] as unknown as FutenWebSocketRouteType<T>,
                             params: route.params
-                        } satisfies WebSocketDataType
+                        } satisfies WebSocketDataType<string>
                     })
                 ) return new Response('Upgrade failed!', { status: 500 });
                 return new Response(null, { status: 101 });

@@ -1,3 +1,14 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+export type RouteParams<S extends string> =
+    S extends `${infer _Start}:${infer Param}/${infer Rest}`
+        ? { [K in Param | keyof RouteParams<`/${Rest}`>]: string }
+        : S extends `${infer _Start}*${infer _}`
+            ? { $: string }
+            : S extends `${infer _Start}:${infer Param}`
+                ? { [K in Param]: string }
+                : {};
+/* eslint-enable @typescript-eslint/no-unused-vars */
+
 interface Node<T> {
     pathPart: string;
     store: Record<number, T> | null;
