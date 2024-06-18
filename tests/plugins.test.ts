@@ -63,7 +63,7 @@ function Swagger<S extends Futen>(server: S, path = '/swagger.json'): void {
     swagger[0] = SwaggerRoute as unknown as typeof swagger[0];
 }
 
-describe('PLUGINS', () => {
+describe('MULTIPLE PLUGINS', () => {
     @route('/')
     class Home {
         public get(): Response {
@@ -179,5 +179,68 @@ describe('PLUGINS', () => {
                 }
             ]
         });
+    });
+});
+
+describe('ROUTE PLUGIN', () => {
+    @route('/')
+    class Home {
+        public get(): Response {
+            return Response.json({ hello: 'world' });
+        }
+    }
+
+    const server = new Futen(
+        {
+            Home
+        },
+        {
+            port: 0
+        }
+    )
+        .plug(Swagger)
+
+    const { port } = server.instance;
+    test('should return routes', async () => {
+        const response = await fetch(
+            new Request(`http://localhost:${port}/swagger.json`)
+        );
+        const body = await response.json();
+        expect(body).toEqual({ routes: [{ class: 'Home', methods: ['get'], path: '/' }] });
+    });
+});
+
+describe('FETCH PLUGIN', () => {
+    @route('/')
+    class Home {
+        public get(): Response {
+            return Response.json({ hello: 'world' });
+        }
+    }
+
+    const server = new Futen(
+        {
+            Home
+        },
+        {
+            port: 0
+        }
+    )
+        .plug(CORS, {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, DELETE, PUT, PATCH',
+            'Access-Control-Allow-Headers': '*'
+        } as const)
+
+    const { port } = server.instance;
+    test('should return routes and overriden CORS headers', async () => {
+        const response = await fetch(
+            new Request(`http://localhost:${port}/`)
+        );
+        expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*');
+        expect(response.headers.get('Access-Control-Allow-Methods')).toBe('POST, GET, OPTIONS, DELETE, PUT, PATCH');
+        expect(response.headers.get('Access-Control-Allow-Headers')).toBe('*');
+        const body = await response.json();
+        expect(body).toEqual({ hello: 'world' });
     });
 });
