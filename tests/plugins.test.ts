@@ -1,4 +1,4 @@
-import Futen, { Route, route } from '../dist/index.mjs';
+import Futen, { route } from '../dist/index.mjs';
 import { describe, test, expect } from 'bun:test';
 
 type HTTPMethods = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'OPTIONS' | 'PATCH';
@@ -21,14 +21,14 @@ type CORSHeaders = Partial<{
     Origin: string;
     'Timing-Allow-Origin': string;
 }>;
-export function CORS<S extends Futen>(server: S, policies: CORSHeaders): void {
+function CORS<S extends Futen>(server: S, policies: CORSHeaders): void {
     server.instance.fetch = async function (request: Request): Promise<Response> {
         if (request.method === 'OPTIONS') {
             return new Response('departed', {
                 headers: policies
             });
         }
-        const response = (await server.fetch()(request)) as Response;
+        const response = (await server.fetch()(request, server.instance)) as Response;
         for (const [key, value] of Object.entries(policies)) {
             if (response.headers.has(key)) continue;
             response.headers.set(key, value);
@@ -47,8 +47,8 @@ function Swagger<S extends Futen>(server: S, path = '/swagger.json'): void {
                             class: routeClass,
                             methods: Object.values(handler).filter((property) => {
                                 if (typeof property !== 'function') return false;
-                                return ['get', 'head', 'post', 'put', 'delete', 'connect', 'options', 'trace', 'patch'].includes(property.name);
-                            }).map((method) => method.name.toLowerCase()) as HTTPMethods[],
+                                return ['get', 'head', 'post', 'put', 'delete', 'connect', 'options', 'trace', 'patch'].includes((property as Function).name);
+                            }).map((method: Function) => method.name.toLowerCase()),
                             path: handler.path
                         };
                     }
@@ -59,9 +59,8 @@ function Swagger<S extends Futen>(server: S, path = '/swagger.json'): void {
             }
         }
     );
-
-    const swagger = server.router.register(path)
-    swagger[0] = SwaggerRoute as Route<any, typeof path>;
+    const swagger = server.router.register(path);
+    swagger[0] = SwaggerRoute as unknown as typeof swagger[0];
 }
 
 describe('PLUGINS', () => {
@@ -105,18 +104,21 @@ describe('PLUGINS', () => {
             port: 0
         }
     )
-        .plug(Swagger)
         .plug(CORS, {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, DELETE, PUT, PATCH',
             'Access-Control-Allow-Headers': '*'
         } as const)
+        .plug(Swagger)
 
     const { port } = server.instance;
     test('should return routes and overriden CORS headers', async () => {
         const response = await fetch(
             new Request(`http://localhost:${port}/`)
         );
+        expect(response.headers.get('Access-Control-Allow-Origin')).toBe('localhost');
+        expect(response.headers.get('Access-Control-Allow-Methods')).toBe('GET');
+        expect(response.headers.get('Access-Control-Allow-Headers')).toBe('Content-Type');
         const body = await response.json();
         expect(body).toEqual({
             routes: [
@@ -130,9 +132,6 @@ describe('PLUGINS', () => {
                 }
             ]
         });
-        expect(response.headers.get('Access-Control-Allow-Origin')).toBe('localhost');
-        expect(response.headers.get('Access-Control-Allow-Methods')).toBe('GET');
-        expect(response.headers.get('Access-Control-Allow-Headers')).toBe('Content-Type');
     });
 
     test('should return request body', async () => {
@@ -142,11 +141,11 @@ describe('PLUGINS', () => {
                 body: JSON.stringify({ hello: 'world' })
             })
         );
-        const body = await response.json();
-        expect(body).toEqual({ object: { hello: 'world' } });
         expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*');
         expect(response.headers.get('Access-Control-Allow-Methods')).toBe('POST, GET, OPTIONS, DELETE, PUT, PATCH');
         expect(response.headers.get('Access-Control-Allow-Headers')).toBe('*');
+        const body = await response.json();
+        expect(body).toEqual({ object: { hello: 'world' } });
     });
 
     test('should return CORS headers from the route', async () => {
@@ -162,6 +161,9 @@ describe('PLUGINS', () => {
         const response = await fetch(
             new Request(`http://localhost:${port}/swagger.json`)
         );
+        expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*');
+        expect(response.headers.get('Access-Control-Allow-Methods')).toBe('POST, GET, OPTIONS, DELETE, PUT, PATCH');
+        expect(response.headers.get('Access-Control-Allow-Headers')).toBe('*');
         const body = await response.json();
         expect(body).toEqual({
             routes: [
@@ -177,8 +179,5 @@ describe('PLUGINS', () => {
                 }
             ]
         });
-        expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*');
-        expect(response.headers.get('Access-Control-Allow-Methods')).toBe('POST, GET, OPTIONS, DELETE, PUT, PATCH');
-        expect(response.headers.get('Access-Control-Allow-Headers')).toBe('*');
     });
 });

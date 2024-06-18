@@ -78,6 +78,12 @@ export default class Futen<P extends string = string, T = Record<P, unknown>> {
             websocket: webSocketRouteWrapper(),
             ...options
         });
+        // This may seem like a hack, but it's the only way I found to normalize the fetch function
+        // and make it work with the plugin system
+        this.instance.fetch = (request: Request) => {
+            return this.fetch(options)(request, this.instance);
+        };
+        this.instance.reload(this.instance);
     }
 
     public plug<S extends this, B extends unknown[], A extends (server: S, ...args: B) => void>(
