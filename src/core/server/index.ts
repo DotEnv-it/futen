@@ -7,6 +7,7 @@ import type { Middleware, MiddlewareRelation } from '../decorators/middleware';
 import type { Server as BunServer, ServeOptions } from 'bun';
 import type {
     FutenWebSocketRouteType,
+    OmitFirstArg,
     WSEvent,
     WebSocketDataType
 } from '../decorators/websocket';
@@ -86,7 +87,7 @@ export default class Futen<P extends string = string, T = Record<P, unknown>> {
         this.instance.reload(this.instance);
     }
 
-    public plug<S extends this, B extends unknown[], A extends (server: S, ...args: B) => void>(
+    public plug<S extends this, A extends (server: S, ...args: any[]) => void, B extends Parameters<OmitFirstArg<A>>>(
         plugin: A,
         ...args: B
     ): this {
