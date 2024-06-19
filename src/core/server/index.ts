@@ -46,6 +46,8 @@ export class Route<T, P extends string> {
                 'Invalid target, expected a class. Make sure to apply the decorator to a class, not to a method or property.'
             );
         }
+        if (Object.hasOwnProperty.call(target.prototype, 'data'))
+            this.data = (target.prototype as unknown as { data: Record<string, unknown> }).data;
         this.target = target;
         this.path = path;
 
