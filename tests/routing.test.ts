@@ -102,7 +102,7 @@ describe('REST RESPONSES', () => {
         '/api/posts/:postID/comments',
         '/api/posts/:postID/comments/:commentID',
         '/medium/length/',
-        '/very/very/long/long/route/route/path',
+        '/very/very/long/long/route/route/path?some=query',
         '/v:version/api/login',
         '/user/v:version/:userID',
         '/test/:param1/v:param2/*'
@@ -196,7 +196,11 @@ describe('REST RESPONSES', () => {
         },
         '/very/very/long/long/route/route/path': {
             code: 200,
-            body: { path: '/very/very/long/long/route/route/path', params: {} }
+            body: { path: '/very/very/long/long/route/route/path?some=query', params: {} }
+        },
+        '/very/very/long/long/route/route/path?with=query': {
+            code: 200,
+            body: { path: '/very/very/long/long/route/route/path?some=query', params: {} }
         },
         '/404-not-found': { code: 404, body: {} },
         '/?q': { code: 200, body: { path: '/', params: {} } },

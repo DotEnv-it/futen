@@ -38,6 +38,7 @@ export default class Router<T = unknown> {
                 `Invalid route: ${path}\nRoute path must begin with a "/"`
             );
         }
+        if (path.includes('?')) path = path.slice(0, path.indexOf('?'));
         const endsWithWildcard = path.endsWith('*');
 
         if (endsWithWildcard) path = path.slice(0, -1);
