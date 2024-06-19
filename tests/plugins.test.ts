@@ -108,7 +108,7 @@ describe('MULTIPLE PLUGINS', () => {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, DELETE, PUT, PATCH',
             'Access-Control-Allow-Headers': '*'
-        } as const)
+        })
         .plug(Swagger)
 
     const { port } = server.instance;

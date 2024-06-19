@@ -73,7 +73,7 @@ export function ws<P extends string>(path: P) {
 }
 
 type WebSocketKey = keyof WSEvent;
-type OmitFirstArg<F> = F extends (arg0: any, ...args: infer P) => infer R
+export type OmitFirstArg<F> = F extends (arg0: any, ...args: infer P) => infer R
     ? (...args: P) => R
     : never;
 type WebSocketEventParameterType<T extends WebSocketKey> = Parameters<
