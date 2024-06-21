@@ -73,7 +73,6 @@ export default class Futen<P extends string = string, T = Record<P, unknown>> {
         routes: T,
         options?: ServerOptions
     ) {
-        this.options = options ?? {};
         for (const route of Object.values(routes as Record<string, Route<T, P>>)) {
             const store = this.router.register(route.path);
             store[0] = route;
@@ -84,10 +83,9 @@ export default class Futen<P extends string = string, T = Record<P, unknown>> {
             websocket: webSocketRouteWrapper(),
             ...options
         });
-        // This may seem like a hack, but it's the only way I found to normalize the fetch function
-        // and make it work with the plugin system
+        this.options = options ?? {};
         this.instance.fetch = (request: Request) => {
-            return this.fetch(options)(request, this.instance);
+            return this.fetch(this.options)(request, this.instance);
         };
         this.instance.reload(this.instance);
     }
