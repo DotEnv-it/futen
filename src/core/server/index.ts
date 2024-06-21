@@ -13,6 +13,7 @@ import type {
 } from '../decorators/websocket';
 
 type RouteType<S extends string> = HTTPMethod<S> | WSEvent<S>;
+type ServerOptions = Partial<ServeOptions> & MiddlewareRelation;
 
 function overrideMethods<T, K, P extends string>(target: T, methods: RouteType<P>, override: K): T {
     for (const method in methods) {
@@ -66,10 +67,11 @@ export default class Futen<P extends string = string, T = Record<P, unknown>> {
     public readonly router = new Router<Route<T, P>>();
     public readonly routes: { [key in keyof T]: Route<T[key], P> };
     public readonly instance: BunServer;
+    public readonly options: ServerOptions;
 
     public constructor(
         routes: T,
-        options?: Partial<ServeOptions> & MiddlewareRelation
+        options?: ServerOptions
     ) {
         for (const route of Object.values(routes as Record<string, Route<T, P>>)) {
             const store = this.router.register(route.path);
@@ -81,10 +83,9 @@ export default class Futen<P extends string = string, T = Record<P, unknown>> {
             websocket: webSocketRouteWrapper(),
             ...options
         });
-        // This may seem like a hack, but it's the only way I found to normalize the fetch function
-        // and make it work with the plugin system
+        this.options = options ?? {};
         this.instance.fetch = (request: Request) => {
-            return this.fetch(options)(request, this.instance);
+            return this.fetch(this.options)(request, this.instance);
         };
         this.instance.reload(this.instance);
     }
