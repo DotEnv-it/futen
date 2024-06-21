@@ -13,6 +13,7 @@ import type {
 } from '../decorators/websocket';
 
 type RouteType<S extends string> = HTTPMethod<S> | WSEvent<S>;
+type ServerOptions = Partial<ServeOptions> & MiddlewareRelation;
 
 function overrideMethods<T, K, P extends string>(target: T, methods: RouteType<P>, override: K): T {
     for (const method in methods) {
@@ -66,11 +67,13 @@ export default class Futen<P extends string = string, T = Record<P, unknown>> {
     public readonly router = new Router<Route<T, P>>();
     public readonly routes: { [key in keyof T]: Route<T[key], P> };
     public readonly instance: BunServer;
+    public readonly options: ServerOptions;
 
     public constructor(
         routes: T,
-        options?: Partial<ServeOptions> & MiddlewareRelation
+        options?: ServerOptions
     ) {
+        this.options = options ?? {};
         for (const route of Object.values(routes as Record<string, Route<T, P>>)) {
             const store = this.router.register(route.path);
             store[0] = route;
