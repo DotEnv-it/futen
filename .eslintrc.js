@@ -6,6 +6,8 @@ module.exports = {
         'node_modules/**/*',
         'bake.ts',
         'tests/**/*',
+        'examples/**/*',
+        'tests/**/*',
         'dist/**/*',
     ],
     root: true,
