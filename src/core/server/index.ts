@@ -102,7 +102,7 @@ export default class Futen<P extends string = string, T = Record<P, unknown>> {
     public fetch(serverMiddleware?: MiddlewareRelation) {
         return (request: Request, server?: BunServer) => {
             const route = this.router.find(
-                request.url.substring(request.url.indexOf('/', 8))
+                request.url.substring(request.url.indexOf('/', 10))
             );
             if (route === null) {
                 return new Response(`Route not found for ${request.url}`, {
