@@ -2,6 +2,7 @@ import Router from '../../router';
 import { HTTPMethods } from '../decorators/http';
 import { WSEvents, webSocketRouteWrapper } from '../decorators/websocket';
 import { runMiddleware } from '../decorators/middleware';
+import type { RouteParams } from '../../router';
 import type { HTTPMethod } from '../decorators/http';
 import type { Middleware, MiddlewareRelation } from '../decorators/middleware';
 import type { Server as BunServer, ServeOptions } from 'bun';
@@ -51,15 +52,7 @@ export class Route<T, P extends string> {
             this.data = (target.prototype as unknown as { data: Record<string, unknown> }).data;
         this.target = target;
         this.path = path;
-
-        switch (typeOfRoute) {
-            case 'http':
-                overrideMethods(this, HTTPMethods(path), target.prototype);
-                break;
-            case 'ws':
-                overrideMethods(this, WSEvents(path), target.prototype);
-                break;
-        }
+        overrideMethods(this, { http: HTTPMethods, ws: WSEvents }[typeOfRoute](path), target.prototype);
     }
 }
 
@@ -125,18 +118,16 @@ export default class Futen<P extends string = string, T = Record<P, unknown>> {
                     server !== undefined &&
                     !server.upgrade(request, {
                         data: {
-                            route: route.store[0] as unknown as FutenWebSocketRouteType<T>,
+                            route: routeStore as Route<T, P> & FutenWebSocketRouteType<T>,
                             params: route.params
                         } satisfies WebSocketDataType<string>
                     })
                 ) return new Response('Upgrade failed!', { status: 500 });
                 return new Response(null, { status: 101 });
             }
-            // @ts-expect-error - Element implicitly has an 'any' type because expression of type 'string' can't be used to index type 'Route<T>'. No index signature with a parameter of type 'string' was found on type 'Route<T>'.ts(7053)
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-            return route.store[0][request.method.toLowerCase()](
+            return (routeStore as Route<T, P> & HTTPMethod<P>)[request.method.toLowerCase() as keyof HTTPMethod<P>](
                 request,
-                route.params
+                route.params as RouteParams<P>
             );
         };
     }

@@ -149,7 +149,7 @@ export default class Router<T = unknown> {
 
     public find(
         url: string
-    ): { store: Record<number, T>, params: Record<string, string> } | null {
+    ): { store: Record<number, T>, params: RouteParams<string> } | null {
         if (url === '' || url[0] !== '/') return null;
 
         const queryIndex = url.indexOf('?');
