@@ -14,7 +14,7 @@ export function WSEvents<P extends string>(_path?: P) {
         /* eslint-disable @typescript-eslint/no-unused-vars */
         message: (
             _ws: ServerWebSocket<WebSocketDataType<P>>,
-            _message: string | ArrayBuffer | Uint8Array,
+            _message: string | Buffer | Uint8Array,
             _params?: RouteParams<P>
         ): void => {
             return;
